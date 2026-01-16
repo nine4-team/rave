@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "rave-mobile",
+    "slug": "rave-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.nine4.rave",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    }
+  }
+}

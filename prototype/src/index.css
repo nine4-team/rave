@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: #f7f8fa;
+  color: #111111;
+}
+
+.dark body {
+  background-color: #1E1E1E;
+  color: #E0E0E0;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Color scheme utilities */
+@layer components {
+  /* Primary button */
+  .btn-primary {
+    @apply bg-[#987e55] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 hover:bg-[#6B5D47] active:bg-[#6B5D47];
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply bg-[#f0f0f0] text-[#333333] font-semibold py-2 px-4 rounded-lg transition-colors duration-200 hover:bg-[#e0e0e0];
+  }
+
+  .dark .btn-secondary {
+    @apply bg-[#333333] text-[#E0E0E0] hover:bg-[#444444];
+  }
+
+  /* Disabled button */
+  .btn-disabled {
+    @apply bg-[#cccccc] text-white font-semibold py-2 px-4 rounded-lg cursor-not-allowed opacity-50;
+  }
+
+  /* Destructive button */
+  .btn-destructive {
+    @apply bg-[#c00000] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 hover:bg-[#a00000];
+  }
+
+  /* Status badges */
+  .badge-draft {
+    @apply bg-[#F5F3EF] text-[#666666] text-xs font-semibold px-2 py-1 rounded;
+  }
+
+  .dark .badge-draft {
+    @apply bg-[#D4C4B0] text-[#6B5D47];
+  }
+
+  .badge-sent {
+    @apply bg-[#FFF8E1] text-[#B06E00] text-xs font-semibold px-2 py-1 rounded;
+  }
+
+  .dark .badge-sent {
+    @apply bg-[#D4C4B0] text-[#6B5D47];
+  }
+
+  .badge-completed {
+    @apply bg-[#F5F3EF] text-[#4A7C59] text-xs font-semibold px-2 py-1 rounded;
+  }
+
+  .dark .badge-completed {
+    @apply bg-[#D4C4B0] text-[#4A7C59];
+  }
+
+  .badge-abandoned {
+    @apply bg-[#FCE8E6] text-[#C5221F] text-xs font-semibold px-2 py-1 rounded;
+  }
+
+  .dark .badge-abandoned {
+    @apply bg-[#D4C4B0] text-[#6B5D47];
+  }
+
+  /* Card styling */
+  .card {
+    @apply bg-white rounded-lg border border-[#eeeeee] shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  .dark .card {
+    @apply bg-[#2E2E2E] border-[#38383A];
+  }
+
+  /* Input styling */
+  .input-field {
+    @apply bg-white border border-[#dddddd] text-[#333333] rounded-lg py-2 px-3 transition-colors focus:outline-none focus:border-[#987e55] focus:ring-2 focus:ring-[#987e55]/20;
+  }
+
+  .dark .input-field {
+    @apply bg-[#2E2E2E] border-[#38383A] text-[#E0E0E0] placeholder-[#888888];
+  }
+
+  .input-field::placeholder {
+    @apply text-[#999999];
+  }
+
+  /* Text colors */
+  .text-primary {
+    @apply text-[#111111];
+  }
+
+  .dark .text-primary {
+    @apply text-[#E0E0E0];
+  }
+
+  .text-secondary {
+    @apply text-[#666666];
+  }
+
+  .dark .text-secondary {
+    @apply text-[#B0B0B0];
+  }
+
+  .text-tertiary {
+    @apply text-[#999999];
+  }
+
+  .dark .text-tertiary {
+    @apply text-[#888888];
+  }
+}

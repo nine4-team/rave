@@ -1,0 +1,163 @@
+import type { Request, TextDraft } from '../../../../packages/shared/src/types';
+
+export type NextActionKind = 'message' | 'reply-google' | 'request-referral';
+
+export type ActionButton = {
+  id: string;
+  label: string;
+  variant: 'primary' | 'secondary' | 'ghost';
+  onPress?: () => void;
+};
+
+export type NextAction = {
+  id: string;
+  kind: NextActionKind;
+  label: string;
+  message: string;
+  subtext?: string;
+  actions: ActionButton[];
+};
+
+export type HistoryItem = {
+  id: string;
+  title: string;
+  timestamp: Date;
+  body?: string;
+};
+
+const getUpcomingMessages = (messages: TextDraft[]) =>
+  messages
+    .filter((message) => message.status === 'unsent' && !message.sentAt)
+    .sort((a, b) => a.orderInSequence - b.orderInSequence);
+
+const formatFeedbackBody = (request: Request) => {
+  const rating = request.feedback?.emojiRating?.value;
+  const feedbackText = request.feedback?.feedbackText?.text;
+  if (rating && feedbackText) {
+    return `Rating: ${rating}/5\n${feedbackText}`;
+  }
+  if (rating) {
+    return `Rating: ${rating}/5`;
+  }
+  if (feedbackText) {
+    return feedbackText;
+  }
+  return undefined;
+};
+
+export const getNextAction = (request: Request): NextAction | null => {
+  if (request.type === 'review' && request.status === 'replied') {
+    return {
+      id: `next-${request.id}`,
+      kind: 'request-referral',
+      label: 'Request a Referral',
+      message: 'Request a referral next.',
+      subtext: 'They just left a positive review - this is a great time to ask.',
+      actions: [
+        {
+          id: 'request-referral',
+          label: 'Request a Referral',
+          variant: 'primary',
+        },
+      ],
+    };
+  }
+
+  const nextMessage = getUpcomingMessages(request.messageSequence.messages)[0];
+  if (!nextMessage) {
+    return null;
+  }
+
+  const shouldReplyOnGoogle =
+    request.type === 'review' &&
+    request.status === 'reviewed' &&
+    request.outcome?.reviewOutcome?.googleReviewSubmitted;
+
+  return {
+    id: `next-${nextMessage.id}`,
+    kind: shouldReplyOnGoogle ? 'reply-google' : 'message',
+    label: shouldReplyOnGoogle ? 'Reply on Google' : 'Text Message',
+    message: nextMessage.content,
+    actions: [
+      {
+        id: 'send',
+        label: shouldReplyOnGoogle ? 'Reply on Google' : 'Send',
+        variant: 'primary',
+      },
+      {
+        id: 'revise',
+        label: 'Revise',
+        variant: 'secondary',
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        variant: 'ghost',
+      },
+    ],
+  };
+};
+
+export const buildHistoryItems = (request: Request): HistoryItem[] => {
+  const items: HistoryItem[] = [];
+
+  request.messageSequence.messages
+    .filter((message) => message.sentAt)
+    .forEach((message) => {
+      items.push({
+        id: `message-${message.id}`,
+        title: 'Message Sent',
+        timestamp: message.sentAt ?? message.generatedAt,
+        body: message.content,
+      });
+    });
+
+  const feedbackTimestamp =
+    request.feedback?.feedbackText?.submittedAt ?? request.feedback?.emojiRating?.submittedAt;
+  const feedbackBody = formatFeedbackBody(request);
+  if (feedbackTimestamp && feedbackBody) {
+    items.push({
+      id: `feedback-${feedbackTimestamp.toISOString()}`,
+      title: 'Feedback Received',
+      timestamp: feedbackTimestamp,
+      body: feedbackBody,
+    });
+  }
+
+  if (request.outcome?.reviewOutcome?.submittedAt) {
+    items.push({
+      id: `review-posted-${request.outcome.reviewOutcome.submittedAt.toISOString()}`,
+      title: 'Google Review Posted',
+      timestamp: request.outcome.reviewOutcome.submittedAt,
+    });
+  }
+
+  if (request.referralData?.referrerInput?.submittedAt) {
+    items.push({
+      id: `referrer-input-${request.referralData.referrerInput.submittedAt.toISOString()}`,
+      title: 'Referrer Input',
+      timestamp: request.referralData.referrerInput.submittedAt,
+      body: request.referralData.referrerInput.rawInput,
+    });
+  }
+
+  if (request.referralData?.sentAt) {
+    items.push({
+      id: `intro-sent-${request.referralData.sentAt.toISOString()}`,
+      title: 'Intro Sent',
+      timestamp: request.referralData.sentAt,
+      body: request.referralData.messageVariants?.finalMessage,
+    });
+  }
+
+  if (request.outcome?.referralOutcome?.markedByUserAt) {
+    items.push({
+      id: `intro-success-${request.outcome.referralOutcome.markedByUserAt.toISOString()}`,
+      title: 'Intro Marked Successful',
+      timestamp: request.outcome.referralOutcome.markedByUserAt,
+      body: request.outcome.referralOutcome.noteFromUser,
+    });
+  }
+
+  return items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+};
