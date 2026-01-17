@@ -248,6 +248,51 @@ interface Outcome {
 
 ---
 
+## Derived Metrics (Scorecard)
+
+The scorecard is computed from existing Request data. It is **read-only**, time-filtered, and excludes archived requests.
+
+### Metric Rules (from prototype)
+- **Review Requests** = count of review Requests with `status !== "new"`.
+- **Reviews** = count of review Requests with `status ∈ {"reviewed","replied"}`.
+- **Referral Requests** = count of referral Requests with `status !== "new"`.
+- **Intros** = count of referral Requests with `status ∈ {"introduced","thanked"}`.
+- **Conversion** = completed / requests (rounded to whole percent).
+
+### Time Filtering
+- The time window applies to the **request sent date** (not draft creation).
+- Recommended source:
+  - `requestedAt` (persisted), or
+  - First `TextDraft.sentAt` in `messageSequence.messages` (derived).
+- Requests with no sent timestamp are excluded from scorecard counts.
+
+### Suggested Aggregate Shape
+```typescript
+type ScorecardRange = "last-7" | "last-30" | "last-90" | "all-time" | "custom";
+
+interface ScorecardFilters {
+  range: ScorecardRange;
+  startDate?: Date;   // required when range = "custom"
+  endDate?: Date;     // required when range = "custom"
+  includeArchived?: false; // scorecard default = false
+}
+
+interface ScorecardMetrics {
+  reviews: {
+    requests: number;
+    completed: number;
+    conversionPercent: number;
+  };
+  referrals: {
+    requests: number;
+    completed: number;
+    conversionPercent: number;
+  };
+}
+```
+
+---
+
 ## UI Organization Strategy
 
 ### Screen Hierarchy

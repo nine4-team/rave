@@ -1,25 +1,64 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+export type ThemePreference = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   isDark: boolean;
-  toggleTheme: () => void;
+  themePreference: ThemePreference;
+  setThemePreference: (preference: ThemePreference) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(() => {
+  const [themePreference, setThemePreference] = useState<ThemePreference>(() => {
     if (typeof window === 'undefined') {
-      return false;
+      return 'light';
     }
 
     // Check localStorage first, then system preference
-    const saved = localStorage.getItem('theme');
-    if (saved) {
-      return saved === 'dark';
+    const savedPreference = localStorage.getItem('themePreference') as ThemePreference | null;
+    if (savedPreference === 'light' || savedPreference === 'dark' || savedPreference === 'system') {
+      return savedPreference;
+    }
+
+    const legacyTheme = localStorage.getItem('theme');
+    if (legacyTheme === 'light' || legacyTheme === 'dark') {
+      return legacyTheme;
+    }
+
+    return 'system';
+  });
+
+  const [systemIsDark, setSystemIsDark] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
     }
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setSystemIsDark(event.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  const isDark = useMemo(() => {
+    if (themePreference === 'system') {
+      return systemIsDark;
+    }
+    return themePreference === 'dark';
+  }, [systemIsDark, themePreference]);
 
   useEffect(() => {
     // Update DOM and localStorage
@@ -32,15 +71,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       html.classList.remove('dark');
     }
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => !prev);
-  };
+    localStorage.setItem('themePreference', themePreference);
+  }, [isDark, themePreference]);
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDark, themePreference, setThemePreference }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -13,6 +13,19 @@
 - Add optional context by **voice dictation** (Swift dictation widget for React Native) or typing.
 - Review and send a drafted message outside the app.
 
+## Scorecard Dashboard (Owner App)
+- **Top-level tab** on the main nav, separate from Reviews/Referrals lists.
+- Shows two KPI cards: **Reviews** and **Referrals**.
+- Each card includes:
+  - **Requests** (sent requests only; excludes status = "new")
+  - **Reviews** (reviewed + replied) or **Intros** (introduced + thanked)
+  - **Conversion** (completed / requests)
+- **Time filter** controls the time window for all scorecard metrics:
+  - Default: **Last 30 days**
+  - Presets: **Last 7 / 30 / 90 days**, plus **All time**
+  - Optional: **Custom range** (start + end date)
+- Scorecard metrics exclude **archived** requests.
+
 ## Next Actions + Action Required
 - **Action required** is owner-only and means **action is needed now**.
 - Next actions are:
