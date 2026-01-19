@@ -1,9 +1,10 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Request } from '../../../../packages/shared/src/types';
-import { HistoryTimeline } from '../components/HistoryTimeline';
-import { NextActionCard } from '../components/NextActionCard';
-import { buildHistoryItems, getNextAction } from '../utils/requestDetail';
+import { MessageSequenceSection } from '../components/MessageSequenceSection';
+import { ReferralDataSection } from '../components/ReferralDataSection';
+import { ReviewActivityTimeline } from '../components/ReviewActivityTimeline';
+import { tokens } from '../theme/tokens';
 
 type RequestDetailScreenProps = {
   request: Request;
@@ -37,8 +38,6 @@ const formatDate = (date: Date) =>
 
 export const RequestDetailScreen: React.FC<RequestDetailScreenProps> = ({ request }) => {
   const contactName = request.contactSnapshot?.displayName ?? request.contactId;
-  const nextAction = getNextAction(request);
-  const historyItems = buildHistoryItems(request);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -59,11 +58,16 @@ export const RequestDetailScreen: React.FC<RequestDetailScreenProps> = ({ reques
       </View>
 
       <View style={styles.section}>
-        {nextAction ? <NextActionCard action={nextAction} /> : null}
-      </View>
-
-      <View style={styles.section}>
-        <HistoryTimeline items={historyItems} />
+        {request.type === 'review' ? (
+          <ReviewActivityTimeline request={request} />
+        ) : (
+          <>
+            <MessageSequenceSection sequence={request.messageSequence} />
+            {request.referralData ? (
+              <ReferralDataSection referralData={request.referralData} />
+            ) : null}
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -71,42 +75,42 @@ export const RequestDetailScreen: React.FC<RequestDetailScreenProps> = ({ reques
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    gap: 16,
+    padding: tokens.spacing.xxl,
+    gap: tokens.spacing.xl,
   },
   header: {
-    gap: 6,
+    gap: tokens.spacing.xs2,
   },
   contactName: {
-    fontSize: 22,
+    fontSize: tokens.fontSizes.xxl,
     fontWeight: '700',
-    color: '#111111',
+    color: tokens.colors.textPrimary,
   },
   subtext: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textMuted,
   },
   statusBar: {
     flexDirection: 'row',
-    gap: 16,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#FAFAFA',
+    gap: tokens.spacing.xl,
+    padding: tokens.spacing.xl,
+    borderRadius: tokens.radii.lg,
+    backgroundColor: tokens.colors.surfaceAlt,
   },
   statusItem: {
-    gap: 4,
+    gap: tokens.spacing.xs,
   },
   statusLabel: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textMuted,
   },
   statusValue: {
-    fontSize: 14,
+    fontSize: tokens.fontSizes.base,
     fontWeight: '600',
-    color: '#111111',
+    color: tokens.colors.textPrimary,
     textTransform: 'capitalize',
   },
   section: {
-    gap: 12,
+    gap: tokens.spacing.lg,
   },
 });

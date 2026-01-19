@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { HistoryItem } from '../utils/requestDetail';
+import { tokens } from '../theme/tokens';
 
 type HistoryTimelineProps = {
   items: HistoryItem[];
@@ -50,64 +51,64 @@ export const HistoryTimeline: React.FC<HistoryTimelineProps> = ({ items }) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: tokens.radii.lg,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
-    backgroundColor: '#FFFFFF',
+    borderColor: tokens.colors.borderLight,
+    backgroundColor: tokens.colors.surface,
     overflow: 'hidden',
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FAFAFA',
+    paddingHorizontal: tokens.spacing.xl,
+    paddingVertical: tokens.spacing.lg,
+    backgroundColor: tokens.colors.surfaceAlt,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 14,
+    fontSize: tokens.fontSizes.base,
     fontWeight: '600',
-    color: '#111111',
+    color: tokens.colors.textPrimary,
   },
   headerIcon: {
-    fontSize: 14,
-    color: '#888888',
+    fontSize: tokens.fontSizes.base,
+    color: tokens.colors.textMuted,
   },
   emptyText: {
-    padding: 16,
-    color: '#888888',
-    fontSize: 13,
+    padding: tokens.spacing.xl,
+    color: tokens.colors.textMuted,
+    fontSize: tokens.fontSizes.md,
   },
   itemsContainer: {
-    gap: 12,
-    padding: 16,
+    gap: tokens.spacing.lg,
+    padding: tokens.spacing.xl,
   },
   item: {
-    gap: 8,
+    gap: tokens.spacing.sm,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 12,
+    gap: tokens.spacing.lg,
   },
   itemTitle: {
-    fontSize: 13,
+    fontSize: tokens.fontSizes.md,
     fontWeight: '600',
-    color: '#444444',
+    color: tokens.colors.textDark,
     flex: 1,
   },
   itemTimestamp: {
-    fontSize: 11,
-    color: '#999999',
+    fontSize: tokens.fontSizes.xs,
+    color: tokens.colors.textSubtle,
   },
   itemBody: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: tokens.colors.surfaceAlt,
+    borderRadius: tokens.radii.md,
+    padding: tokens.spacing.lg,
   },
   itemBodyText: {
-    fontSize: 13,
-    color: '#111111',
+    fontSize: tokens.fontSizes.md,
+    color: tokens.colors.textPrimary,
   },
 });

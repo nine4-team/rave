@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NextAction } from '../utils/requestDetail';
+import { tokens } from '../theme/tokens';
 
 type NextActionCardProps = {
   action: NextAction;
@@ -36,75 +37,75 @@ export const NextActionCard: React.FC<NextActionCardProps> = ({ action }) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: tokens.radii.lg,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
-    backgroundColor: '#FFFFFF',
+    borderColor: tokens.colors.borderLight,
+    backgroundColor: tokens.colors.surface,
     overflow: 'hidden',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: tokens.fontSizes.base,
     fontWeight: '600',
-    color: '#111111',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FAFAFA',
+    color: tokens.colors.textPrimary,
+    paddingHorizontal: tokens.spacing.xl,
+    paddingVertical: tokens.spacing.lg,
+    backgroundColor: tokens.colors.surfaceAlt,
   },
   body: {
-    padding: 16,
+    padding: tokens.spacing.xl,
   },
   label: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 8,
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textMuted,
+    marginBottom: tokens.spacing.sm,
   },
   messageContainer: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    backgroundColor: tokens.colors.surfaceAlt,
+    borderRadius: tokens.radii.md,
+    padding: tokens.spacing.lg,
+    marginBottom: tokens.spacing.lg,
   },
   message: {
-    fontSize: 14,
-    color: '#111111',
+    fontSize: tokens.fontSizes.base,
+    color: tokens.colors.textPrimary,
   },
   subtext: {
-    fontSize: 12,
-    color: '#777777',
-    marginTop: 8,
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textSecondary,
+    marginTop: tokens.spacing.sm,
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: tokens.spacing.sm,
     flexWrap: 'wrap',
   },
   buttonBase: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: tokens.spacing.md,
+    paddingHorizontal: tokens.spacing.lg,
+    borderRadius: tokens.radii.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonprimary: {
-    backgroundColor: '#987E55',
+    backgroundColor: tokens.colors.brand,
   },
   buttonsecondary: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: tokens.colors.actionBackground,
   },
   buttonghost: {
-    backgroundColor: '#F7F7F7',
+    backgroundColor: tokens.colors.actionBackgroundSubtle,
   },
   buttonText: {
-    fontSize: 13,
+    fontSize: tokens.fontSizes.md,
     fontWeight: '600',
   },
   buttonTextprimary: {
-    color: '#FFFFFF',
+    color: tokens.colors.surface,
   },
   buttonTextsecondary: {
-    color: '#333333',
+    color: tokens.colors.textSecondary,
   },
   buttonTextghost: {
-    color: '#333333',
+    color: tokens.colors.textSecondary,
   },
 });

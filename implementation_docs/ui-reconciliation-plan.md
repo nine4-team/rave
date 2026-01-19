@@ -10,7 +10,7 @@ Bring the main app UI into alignment with the prototype UI, which currently refl
   - Request list and card
   - Request detail
   - Navigation and tabs
-  - Settings and scorecard (prototype-only)
+  - Settings and scorecard (prototype -> mobile)
 
 ## Inventory (Current Surface Area)
 ### Prototype
@@ -29,80 +29,117 @@ Bring the main app UI into alignment with the prototype UI, which currently refl
 
 ### Main App (Mobile)
 - `apps/mobile/src/components/RequestCard.tsx`
-  - Status/type row, action-required badge, message preview
+  - Archive action, message preview (prototype-aligned)
 - `apps/mobile/src/screens/RequestDetailScreen.tsx`
-  - Next action card, history timeline
-- No settings/scorecard screens (currently)
+  - Review timeline (next action + history)
+  - Referral message sequence + referral data
+- Navigation shell now mirrors prototype tabs + bottom nav (icons + labels).
+- Request list view exists with stage filters and empty states.
+- Settings/scorecard UI now mirrors the prototype content and structure.
 
 ## Drift Summary (Delta to Reconcile)
 1) **Navigation/Information Architecture**
-   - Prototype has tabs + bottom nav; mobile does not.
-   - Decision needed: remove from prototype or add to mobile.
+   - ✅ Mobile now includes tabs + bottom nav to match prototype.
+   - Icons for bottom nav and flat icons for “New Request” CTAs added.
 
 2) **Request Card Structure**
-   - Mobile includes status/type row and “Action Needed” badge.
-   - Prototype has archive button and omits status/type row.
+   - Mobile now matches prototype card layout (archive action, message preview).
+   - Status/type row and action-needed badge removed from mobile for parity.
 
 3) **Request Detail Content**
    - Prototype uses review timeline + message sequence + referral data.
-   - Mobile uses next-action card + history timeline.
+   - Mobile now mirrors this content order and sections.
 
 4) **Settings + Scorecard**
-   - Prototype contains full settings and scorecard; mobile has none.
-   - Decide whether to keep and port or remove.
+   - ✅ Mobile now includes full settings + scorecard UI parity from the prototype.
+   - Decision: port from prototype to mobile (no removals).
 
 5) **Data Model Assumptions**
    - Mobile uses `contactSnapshot`, `actionRequired`, etc.
-   - Prototype uses `contactName` and direct fields.
+   - Prototype now uses shared types and `contactSnapshot`.
 
 ## Reconciliation Decisions (Proposed Defaults)
 - Treat the prototype as the UI source-of-truth unless the main app already matches it with improved implementation quality.
 - For any area where the main app already reflects the prototype UI, keep the main app behavior and adjust the prototype to match.
-- If settings/scorecard are confirmed in scope, port them to mobile; otherwise keep them prototype-only until a product decision is made.
+- Settings/scorecard are in scope and are ported to mobile (no removals).
 
 ## Implementation Steps
 ### Phase 1: Baseline Alignment (High Priority)
 1) **Request Card parity**
-   - Make mobile match the prototype card layout and elements.
+   - ✅ Mobile matches the prototype card layout and elements.
+   - ❗Unresolved: request preview cards are not at parity yet (layout/spacing/typography still diverge).
    - If mobile already reflects the prototype UI with better structure, keep mobile as reference and update prototype to match.
-   - Decide whether the archive action is part of the intended UX; if removed, document rationale.
+   - Archive action retained for now; needs product confirmation.
 
 2) **Request Detail parity**
-   - Make mobile match the prototype detail content order and sections.
+   - ✅ Mobile matches the prototype detail content order and sections.
+   - ❗Unresolved: request detail cards are not at parity yet (styling and structure still diverge).
    - If mobile already reflects the prototype UI with better structure, keep mobile as reference and update prototype to match.
-   - Align status/type labels and date formatting across both.
+   - Status/type/date formatting still needs alignment check.
+   - **Instructions for follow-up model**
+     - Compare the prototype card UI in `prototype/src/components/RequestCard.tsx` to the mobile card UI in `apps/mobile/src/components/RequestCard.tsx`.
+     - Identify the exact deltas in layout/spacing/typography/icon sizing for the request preview cards.
+     - Implement the deltas in the mobile app (prototype is source-of-truth).
+     - Repeat the same process for request detail cards by comparing `prototype/src/components/RequestDetail.tsx` with the mobile equivalents in `apps/mobile/src/screens/RequestDetailScreen.tsx` and its subcomponents in `apps/mobile/src/components/*`.
+     - Verify parity by checking the cards in the Expo web preview (or emulator) and update this doc with confirmation.
 
 3) **Data model normalization**
-   - Align the prototype `Request` type to the shared model (if possible) and keep mobile as implementation reference.
-   - Use `contactSnapshot` and `actionRequired` consistently in both.
+   - ✅ Prototype `Request` type now uses the shared model.
+   - ✅ `contactSnapshot` is used consistently (prototype + mobile).
 
 ### Phase 2: Navigation & IA Alignment
 4) **Tabs and bottom nav**
-   - If tabs and scorecard are approved, add equivalents to mobile.
-   - If not approved, remove from prototype and align navigation to mobile.
+   - Define the target IA in a short decision note:
+     - Option A (keep): top tabs + bottom nav remain in prototype and are ported to mobile.
+     - Option B (remove): prototype navigation collapses to mobile-style flow.
+   - Decision: Option A. Prototype navigation is source-of-truth; port tabs + bottom nav to mobile.
+   - Inventory screens impacted:
+     - Prototype: scorecard, reviews, referrals, settings (tabs + bottom nav).
+     - Mobile: request list + request detail (single stack).
+   - Implementation actions by option:
+     - Option A: add tab/navigation shell to mobile, map prototype tabs to mobile routes, and ensure request list is the default entry.
+     - Option B: remove prototype tabs + bottom nav, expose request list as the root, and keep request detail as modal/stack.
+   - Status:
+     - ✅ Mobile now defaults to Scorecard tab (prototype entry).
+     - ✅ Stage sub-tabs for reviews/referrals implemented.
+     - ✅ Bottom nav matches prototype structure with icons + labels.
+     - ✅ New request CTA includes flat icons (review/referral).
+     - ✅ Request detail opens from list with back navigation.
+   - Validation:
+     - Navigation matches across apps for the chosen option.
+     - Entry point and back behavior are consistent with the mobile flow.
+     - Visual parity audit still required for spacing/typography/icon sizing.
 
-### Phase 3: Settings & Scorecard Decision
-5) **Feature parity decision**
-   - If keep: create mobile screens and shared copy + tokens.
-   - If remove: delete prototype settings/scorecard UI and related states.
+### Phase 3: Settings & Scorecard Parity
+5) **Feature parity**
+  - ✅ Mobile now includes Settings + Scorecard UI parity (appearance, business description, tone examples, Google URL, emoji threshold, cadence controls, and scorecard metrics).
+  - Prototype remains the UI source-of-truth; mobile mirrors content and structure.
+  - Wiring status: theme toggle + settings persistence still pending.
 
 ### Phase 4: UI Tokens & Styling
 6) **Token alignment**
    - Move shared colors/spacing into `packages/shared` or a UI package.
    - Ensure both apps consume the same palette and typography scale.
+   - **Status (mobile only):** centralized tokens added in `apps/mobile/src/theme/tokens.ts`.
+   - **Status (mobile only):** core mobile screens/components now consume tokens for colors, spacing, and typography.
+   - **Outstanding:** theme wiring and dark/light palette switching are still pending.
 
 ## Deliverables
-- Updated main app UI aligned to prototype for request list/detail.
-- Decision memo for settings/scorecard (keep/port/remove).
+- Updated main app UI aligned to prototype for request list/detail/settings/scorecard.
+- Decision recorded: settings/scorecard are ported from prototype to mobile.
 - Shared token usage checklist.
 
 ## Validation Checklist
 - Request card layout, labels, and status match the prototype (unless main app already reflects it).
 - Request detail matches the prototype content order and sections (unless main app already reflects it).
+- Settings and scorecard match the prototype copy, sections, and layout.
 - Visual style aligns (spacing, typography, colors).
+- Bottom nav icons + labels match prototype.
+- New request CTA iconography matches prototype.
 - No prototype-only UI remains in core flows unless explicitly approved.
 
 ## Notes / Open Decisions
 - Should archive action be part of core flow?
-- Are tabs/scorecard part of the main product roadmap?
+- Settings/scorecard data wiring (persistence + backend) is still TBD.
+- Theme toggle wiring (dark mode + system preference) is still TBD.
 - Should request history be represented as timeline or message sequence?

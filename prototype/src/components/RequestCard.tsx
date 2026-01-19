@@ -9,16 +9,25 @@ interface RequestCardProps {
 
 export const RequestCard: React.FC<RequestCardProps> = ({ request, onExpand }) => {
   const lastMessage = request.messageSequence.messages[request.messageSequence.messages.length - 1];
+  const contactName = request.contactSnapshot?.displayName ?? request.contactId;
+  const initials =
+    request.contactSnapshot?.initials ??
+    contactName
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   
   return (
     <div className="card p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onExpand(request)}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1">
           <div className="w-10 h-10 rounded-full bg-[#D4C4B0] flex items-center justify-center text-[#6B5D47] font-semibold">
-            {request.contactName.charAt(0)}
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-primary">{request.contactName}</h3>
+            <h3 className="font-semibold text-primary">{contactName}</h3>
             <p className="text-xs text-secondary">
               {request.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </p>

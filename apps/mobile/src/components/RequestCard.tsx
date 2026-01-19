@@ -1,27 +1,25 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Request } from '../../../../packages/shared/src/types';
+import { tokens } from '../theme/tokens';
 
 type RequestCardProps = {
   request: Request;
   onPress?: (request: Request) => void;
-};
-
-const statusLabelMap: Record<Request['status'], string> = {
-  new: 'New',
-  requested: 'Requested',
-  'feedback-received': 'Responded',
-  reviewed: 'Completed',
-  replied: 'Completed',
-  'referral-drafted': 'Responded',
-  introduced: 'Completed',
-  thanked: 'Completed',
+  onArchive?: (request: Request) => void;
 };
 
 const formatDate = (date: Date) =>
   date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const formatDateTime = (date: Date) =>
+  date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
-export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress }) => {
+export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress, onArchive }) => {
   const lastMessage = request.messageSequence.messages[request.messageSequence.messages.length - 1];
   const contactName = request.contactSnapshot?.displayName ?? request.contactId;
   const initials =
@@ -36,6 +34,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress }) =>
   return (
     <Pressable style={styles.card} onPress={() => onPress?.(request)}>
       <View style={styles.header}>
+        <View style={styles.headerLeft}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
@@ -43,16 +42,16 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress }) =>
           <Text style={styles.name}>{contactName}</Text>
           <Text style={styles.date}>{formatDate(request.createdAt)}</Text>
         </View>
-        {request.actionRequired ? (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Action Needed</Text>
           </View>
-        ) : null}
-      </View>
-
-      <View style={styles.statusRow}>
-        <Text style={styles.statusLabel}>{statusLabelMap[request.status]}</Text>
-        <Text style={styles.typeLabel}>{request.type}</Text>
+        <Pressable
+          onPress={(event) => {
+            event.stopPropagation?.();
+            onArchive?.(request);
+          }}
+          style={styles.archiveButton}
+        >
+          <Text style={styles.archiveText}>Archive</Text>
+        </Pressable>
       </View>
 
       <View style={styles.messagePreview}>
@@ -60,7 +59,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress }) =>
           {lastMessage?.content ?? 'No messages yet.'}
         </Text>
         {lastMessage?.sentAt ? (
-          <Text style={styles.messageTimestamp}>Sent {formatDate(lastMessage.sentAt)}</Text>
+          <Text style={styles.messageTimestamp}>Sent {formatDateTime(lastMessage.sentAt)}</Text>
         ) : null}
       </View>
     </Pressable>
@@ -69,82 +68,74 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, onPress }) =>
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: tokens.radii.lg,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    gap: 12,
+    borderColor: tokens.colors.borderLight,
+    backgroundColor: tokens.colors.surface,
+    padding: tokens.spacing.xl,
+    gap: tokens.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: tokens.spacing.lg,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.spacing.lg,
+    flex: 1,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#D4C4B0',
+    width: tokens.sizes.avatar,
+    height: tokens.sizes.avatar,
+    borderRadius: tokens.sizes.avatar / 2,
+    backgroundColor: tokens.colors.avatarBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 14,
+    fontSize: tokens.fontSizes.base,
     fontWeight: '600',
-    color: '#6B5D47',
+    color: tokens.colors.avatarText,
   },
   headerInfo: {
     flex: 1,
-    gap: 2,
+    gap: tokens.spacing.xs / 2,
   },
   name: {
-    fontSize: 15,
+    fontSize: tokens.fontSizes.lg,
     fontWeight: '600',
-    color: '#111111',
+    color: tokens.colors.textPrimary,
   },
   date: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textMuted,
   },
-  badge: {
-    backgroundColor: '#F5F3EF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  archiveButton: {
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.xs2,
+    borderRadius: tokens.radii.sm,
+    backgroundColor: tokens.colors.actionBackground,
   },
-  badgeText: {
-    fontSize: 11,
+  archiveText: {
+    fontSize: tokens.fontSizes.sm,
+    color: tokens.colors.textSecondary,
     fontWeight: '600',
-    color: '#987E55',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#444444',
-  },
-  typeLabel: {
-    fontSize: 12,
-    color: '#888888',
-    textTransform: 'capitalize',
   },
   messagePreview: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 12,
-    padding: 12,
-    gap: 6,
+    backgroundColor: tokens.colors.surfaceAlt,
+    borderRadius: tokens.radii.md,
+    padding: tokens.spacing.lg,
+    gap: tokens.spacing.xs2,
   },
   messageText: {
-    fontSize: 13,
-    color: '#111111',
+    fontSize: tokens.fontSizes.md,
+    color: tokens.colors.textPrimary,
   },
   messageTimestamp: {
-    fontSize: 11,
-    color: '#888888',
+    fontSize: tokens.fontSizes.xs,
+    color: tokens.colors.textMuted,
   },
 });

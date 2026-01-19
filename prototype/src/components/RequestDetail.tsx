@@ -34,13 +34,15 @@ const getStatusLabel = (request: Request) => {
 };
 
 export const RequestDetail: React.FC<RequestDetailProps> = ({ request, onClose }) => {
+  const contactName = request.contactSnapshot?.displayName ?? request.contactId;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-stretch justify-end z-50 animate-fade-in">
       <div className="bg-white dark:bg-[#2E2E2E] w-full h-full shadow-lg overflow-y-auto animate-slide-in-right">
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-[#2E2E2E] border-b border-[#eeeeee] dark:border-[#38383A] px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-[#111111] dark:text-[#E0E0E0]">{request.contactName}</h2>
+            <h2 className="text-2xl font-bold text-[#111111] dark:text-[#E0E0E0]">{contactName}</h2>
             <p className="text-sm text-[#999999] dark:text-[#888888]">
               Created {request.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </p>
