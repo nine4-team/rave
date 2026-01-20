@@ -67,21 +67,14 @@ Bring the main app UI into alignment with the prototype UI, which currently refl
 ### Phase 1: Baseline Alignment (High Priority)
 1) **Request Card parity**
    - ✅ Mobile matches the prototype card layout and elements.
-   - ❗Unresolved: request preview cards are not at parity yet (layout/spacing/typography still diverge).
+   - ✅ Request preview cards now match prototype layout, spacing, and typography.
    - If mobile already reflects the prototype UI with better structure, keep mobile as reference and update prototype to match.
    - Archive action retained for now; needs product confirmation.
 
 2) **Request Detail parity**
    - ✅ Mobile matches the prototype detail content order and sections.
-   - ❗Unresolved: request detail cards are not at parity yet (styling and structure still diverge).
-   - If mobile already reflects the prototype UI with better structure, keep mobile as reference and update prototype to match.
-   - Status/type/date formatting still needs alignment check.
-   - **Instructions for follow-up model**
-     - Compare the prototype card UI in `prototype/src/components/RequestCard.tsx` to the mobile card UI in `apps/mobile/src/components/RequestCard.tsx`.
-     - Identify the exact deltas in layout/spacing/typography/icon sizing for the request preview cards.
-     - Implement the deltas in the mobile app (prototype is source-of-truth).
-     - Repeat the same process for request detail cards by comparing `prototype/src/components/RequestDetail.tsx` with the mobile equivalents in `apps/mobile/src/screens/RequestDetailScreen.tsx` and its subcomponents in `apps/mobile/src/components/*`.
-     - Verify parity by checking the cards in the Expo web preview (or emulator) and update this doc with confirmation.
+   - ✅ Request detail cards now align with prototype styling and structure.
+   - ✅ Status/type/date formatting aligned with prototype.
 
 3) **Data model normalization**
    - ✅ Prototype `Request` type now uses the shared model.
@@ -114,7 +107,7 @@ Bring the main app UI into alignment with the prototype UI, which currently refl
 5) **Feature parity**
   - ✅ Mobile now includes Settings + Scorecard UI parity (appearance, business description, tone examples, Google URL, emoji threshold, cadence controls, and scorecard metrics).
   - Prototype remains the UI source-of-truth; mobile mirrors content and structure.
-  - Wiring status: theme toggle + settings persistence still pending.
+  - Wiring status: theme toggle wired on mobile (system/light/dark); settings persistence still pending.
 
 ### Phase 4: UI Tokens & Styling
 6) **Token alignment**
@@ -122,7 +115,7 @@ Bring the main app UI into alignment with the prototype UI, which currently refl
    - Ensure both apps consume the same palette and typography scale.
    - **Status (mobile only):** centralized tokens added in `apps/mobile/src/theme/tokens.ts`.
    - **Status (mobile only):** core mobile screens/components now consume tokens for colors, spacing, and typography.
-   - **Outstanding:** theme wiring and dark/light palette switching are still pending.
+  - **Outstanding:** settings persistence + shared token distribution still pending.
 
 ## Deliverables
 - Updated main app UI aligned to prototype for request list/detail/settings/scorecard.

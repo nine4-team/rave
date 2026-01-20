@@ -20,9 +20,12 @@ export type NextAction = {
 
 export type HistoryItem = {
   id: string;
+  icon: 'send' | 'feedback' | 'review-posted' | 'referrer-input' | 'intro-sent' | 'intro-success';
   title: string;
   timestamp: Date;
   body?: string;
+  rating?: number;
+  feedbackText?: string;
 };
 
 const getUpcomingMessages = (messages: TextDraft[]) =>
@@ -30,19 +33,13 @@ const getUpcomingMessages = (messages: TextDraft[]) =>
     .filter((message) => message.status === 'unsent' && !message.sentAt)
     .sort((a, b) => a.orderInSequence - b.orderInSequence);
 
-const formatFeedbackBody = (request: Request) => {
+const getFeedbackDetails = (request: Request) => {
   const rating = request.feedback?.emojiRating?.value;
   const feedbackText = request.feedback?.feedbackText?.text;
-  if (rating && feedbackText) {
-    return `Rating: ${rating}/5\n${feedbackText}`;
+  if (!rating && !feedbackText) {
+    return null;
   }
-  if (rating) {
-    return `Rating: ${rating}/5`;
-  }
-  if (feedbackText) {
-    return feedbackText;
-  }
-  return undefined;
+  return { rating, feedbackText };
 };
 
 export const getNextAction = (request: Request): NextAction | null => {
@@ -81,7 +78,7 @@ export const getNextAction = (request: Request): NextAction | null => {
     actions: [
       {
         id: 'send',
-        label: shouldReplyOnGoogle ? 'Reply on Google' : 'Send',
+        label: 'Send',
         variant: 'primary',
       },
       {
@@ -106,6 +103,7 @@ export const buildHistoryItems = (request: Request): HistoryItem[] => {
     .forEach((message) => {
       items.push({
         id: `message-${message.id}`,
+        icon: 'send',
         title: 'Message Sent',
         timestamp: message.sentAt ?? message.generatedAt,
         body: message.content,
@@ -114,19 +112,22 @@ export const buildHistoryItems = (request: Request): HistoryItem[] => {
 
   const feedbackTimestamp =
     request.feedback?.feedbackText?.submittedAt ?? request.feedback?.emojiRating?.submittedAt;
-  const feedbackBody = formatFeedbackBody(request);
-  if (feedbackTimestamp && feedbackBody) {
+  const feedbackDetails = getFeedbackDetails(request);
+  if (feedbackTimestamp && feedbackDetails) {
     items.push({
       id: `feedback-${feedbackTimestamp.toISOString()}`,
+      icon: 'feedback',
       title: 'Feedback Received',
       timestamp: feedbackTimestamp,
-      body: feedbackBody,
+      rating: feedbackDetails.rating,
+      feedbackText: feedbackDetails.feedbackText,
     });
   }
 
   if (request.outcome?.reviewOutcome?.submittedAt) {
     items.push({
       id: `review-posted-${request.outcome.reviewOutcome.submittedAt.toISOString()}`,
+      icon: 'review-posted',
       title: 'Google Review Posted',
       timestamp: request.outcome.reviewOutcome.submittedAt,
     });
@@ -135,6 +136,7 @@ export const buildHistoryItems = (request: Request): HistoryItem[] => {
   if (request.referralData?.referrerInput?.submittedAt) {
     items.push({
       id: `referrer-input-${request.referralData.referrerInput.submittedAt.toISOString()}`,
+      icon: 'referrer-input',
       title: 'Referrer Input',
       timestamp: request.referralData.referrerInput.submittedAt,
       body: request.referralData.referrerInput.rawInput,
@@ -144,6 +146,7 @@ export const buildHistoryItems = (request: Request): HistoryItem[] => {
   if (request.referralData?.sentAt) {
     items.push({
       id: `intro-sent-${request.referralData.sentAt.toISOString()}`,
+      icon: 'intro-sent',
       title: 'Intro Sent',
       timestamp: request.referralData.sentAt,
       body: request.referralData.messageVariants?.finalMessage,
@@ -153,6 +156,7 @@ export const buildHistoryItems = (request: Request): HistoryItem[] => {
   if (request.outcome?.referralOutcome?.markedByUserAt) {
     items.push({
       id: `intro-success-${request.outcome.referralOutcome.markedByUserAt.toISOString()}`,
+      icon: 'intro-success',
       title: 'Intro Marked Successful',
       timestamp: request.outcome.referralOutcome.markedByUserAt,
       body: request.outcome.referralOutcome.noteFromUser,

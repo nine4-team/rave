@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Check, Monitor, Moon, Sun } from 'lucide-react-native';
-import { tokens } from '../theme/tokens';
-
-type ThemePreference = 'light' | 'dark' | 'system';
+import { type ThemePreference, useTheme } from '../theme/theme';
 
 type ThemeOption = {
   label: string;
@@ -12,7 +10,7 @@ type ThemeOption = {
 };
 
 export const SettingsPanel: React.FC = () => {
-  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
+  const { tokens, themePreference, setThemePreference } = useTheme();
   const [businessDescription, setBusinessDescription] = useState('');
   const [toneExamples, setToneExamples] = useState('');
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState('');
@@ -26,11 +24,13 @@ export const SettingsPanel: React.FC = () => {
     { label: 'Auto', value: 'system', Icon: Monitor },
   ];
 
+  const styles = createStyles(tokens);
+
   return (
     <View style={styles.container}>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Appearance</Text>
+          <Text style={[styles.sectionTitle, styles.appearanceTitle]}>Appearance</Text>
           <Text style={styles.sectionDescription}>
             Choose light, dark, or follow your system preference.
           </Text>
@@ -196,125 +196,129 @@ export const SettingsPanel: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    gap: tokens.spacing.xxl,
-  },
-  section: {
-    gap: tokens.spacing.md,
-  },
-  sectionHeader: {
-    gap: tokens.spacing.xs,
-    paddingHorizontal: tokens.spacing.xs,
-  },
-  sectionTitle: {
-    fontSize: tokens.fontSizes.xl,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-  sectionDescription: {
-    fontSize: tokens.fontSizes.sm,
-    color: tokens.colors.textSecondary,
-  },
-  optionList: {
-    borderRadius: tokens.radii.md,
-    borderWidth: 1,
-    borderColor: tokens.colors.borderLight,
-    overflow: 'hidden',
-    backgroundColor: tokens.colors.surface,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: tokens.spacing.xl,
-    paddingVertical: tokens.spacing.lg,
-  },
-  optionRowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: tokens.colors.borderLight,
-  },
-  optionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: tokens.spacing.lg,
-  },
-  optionLabel: {
-    fontSize: tokens.fontSizes.base,
-    color: tokens.colors.textPrimary,
-  },
-  inputCard: {
-    borderRadius: tokens.radii.md,
-    borderWidth: 1,
-    borderColor: tokens.colors.borderLight,
-    backgroundColor: tokens.colors.surface,
-    padding: tokens.spacing.lg,
-    gap: tokens.spacing.lg,
-  },
-  inputField: {
-    borderWidth: 1,
-    borderColor: tokens.colors.borderMedium,
-    borderRadius: tokens.radii.sm,
-    paddingHorizontal: tokens.spacing.lg,
-    paddingVertical: tokens.spacing.md,
-    fontSize: tokens.fontSizes.base,
-    color: tokens.colors.textPrimary,
-    backgroundColor: tokens.colors.surface,
-  },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  actionRow: {
-    alignItems: 'flex-end',
-  },
-  secondaryButton: {
-    paddingHorizontal: tokens.spacing.lg,
-    paddingVertical: tokens.spacing.sm,
-    borderRadius: tokens.radii.sm,
-    backgroundColor: tokens.colors.actionBackground,
-  },
-  secondaryButtonText: {
-    fontSize: tokens.fontSizes.sm,
-    fontWeight: '600',
-    color: tokens.colors.textSecondary,
-  },
-  emojiRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: tokens.spacing.sm,
-  },
-  emojiButton: {
-    width: tokens.sizes.emoji,
-    height: tokens.sizes.emoji,
-    borderRadius: tokens.radii.md,
-    borderWidth: 1,
-    borderColor: tokens.colors.borderMedium,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: tokens.colors.surface,
-  },
-  emojiButtonActive: {
-    borderColor: tokens.colors.brand,
-    backgroundColor: tokens.colors.brand,
-  },
-  emojiLabel: {
-    fontSize: tokens.fontSizes.base,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-  emojiLabelActive: {
-    color: tokens.colors.surface,
-  },
-  cadenceRow: {
-    gap: tokens.spacing.lg,
-  },
-  cadenceField: {
-    gap: tokens.spacing.xs2,
-  },
-  cadenceLabel: {
-    fontSize: tokens.fontSizes.sm,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-});
+const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
+  StyleSheet.create({
+    container: {
+      gap: tokens.spacing.xxl,
+    },
+    section: {
+      gap: tokens.spacing.md,
+    },
+    sectionHeader: {
+      gap: tokens.spacing.xs,
+      paddingHorizontal: tokens.spacing.xs,
+    },
+    sectionTitle: {
+      fontSize: tokens.fontSizes.xl,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+    appearanceTitle: {
+      fontSize: tokens.fontSizes.lg,
+    },
+    sectionDescription: {
+      fontSize: tokens.fontSizes.sm,
+      color: tokens.colors.textSecondary,
+    },
+    optionList: {
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: tokens.colors.borderLight,
+      overflow: 'hidden',
+      backgroundColor: tokens.colors.surface,
+    },
+    optionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: tokens.spacing.xl,
+      paddingVertical: tokens.spacing.lg,
+    },
+    optionRowDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: tokens.colors.borderLight,
+    },
+    optionLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: tokens.spacing.lg,
+    },
+    optionLabel: {
+      fontSize: tokens.fontSizes.base,
+      color: tokens.colors.textPrimary,
+    },
+    inputCard: {
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: tokens.colors.borderLight,
+      backgroundColor: tokens.colors.surface,
+      padding: tokens.spacing.xl,
+      gap: tokens.spacing.lg,
+    },
+    inputField: {
+      borderWidth: 1,
+      borderColor: tokens.colors.borderMedium,
+      borderRadius: tokens.radii.md,
+      paddingHorizontal: tokens.spacing.lg,
+      paddingVertical: tokens.spacing.sm,
+      fontSize: tokens.fontSizes.base,
+      color: tokens.colors.textPrimary,
+      backgroundColor: tokens.colors.surface,
+    },
+    multilineInput: {
+      minHeight: 100,
+      textAlignVertical: 'top',
+    },
+    actionRow: {
+      alignItems: 'flex-end',
+    },
+    secondaryButton: {
+      paddingHorizontal: tokens.spacing.xl,
+      paddingVertical: tokens.spacing.sm,
+      borderRadius: tokens.radii.md,
+      backgroundColor: tokens.colors.actionBackground,
+    },
+    secondaryButtonText: {
+      fontSize: tokens.fontSizes.sm,
+      fontWeight: '600',
+      color: tokens.colors.textSecondary,
+    },
+    emojiRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: tokens.spacing.sm,
+    },
+    emojiButton: {
+      width: tokens.sizes.emoji,
+      height: tokens.sizes.emoji,
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: tokens.colors.borderMedium,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: tokens.colors.surface,
+    },
+    emojiButtonActive: {
+      borderColor: tokens.colors.brand,
+      backgroundColor: tokens.colors.brand,
+    },
+    emojiLabel: {
+      fontSize: tokens.fontSizes.base,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+    emojiLabelActive: {
+      color: tokens.colors.onBrand,
+    },
+    cadenceRow: {
+      gap: tokens.spacing.lg,
+    },
+    cadenceField: {
+      gap: tokens.spacing.xs2,
+    },
+    cadenceLabel: {
+      fontSize: tokens.fontSizes.sm,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+  });

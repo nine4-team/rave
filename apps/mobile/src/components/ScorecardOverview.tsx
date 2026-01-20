@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Handshake, Star } from 'lucide-react-native';
 import type { Request } from '../../../../packages/shared/src/types';
-import { tokens } from '../theme/tokens';
+import { useTheme } from '../theme/theme';
 
 type MetricItem = {
   label: string;
@@ -19,6 +19,8 @@ type ScorecardOverviewProps = {
 };
 
 export const ScorecardOverview: React.FC<ScorecardOverviewProps> = ({ requests }) => {
+  const { tokens } = useTheme();
+  const styles = createStyles(tokens);
   const overviewMetrics = useMemo<MetricRow[]>(() => {
     const activeRequests = requests.filter((request) => !request.archivedAt);
 
@@ -88,45 +90,46 @@ export const ScorecardOverview: React.FC<ScorecardOverviewProps> = ({ requests }
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    gap: tokens.spacing.xl,
-  },
-  card: {
-    borderRadius: tokens.radii.lg,
-    borderWidth: 1,
-    borderColor: tokens.colors.borderLight,
-    backgroundColor: tokens.colors.surface,
-    padding: tokens.spacing.xl,
-    gap: tokens.spacing.xl,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: tokens.spacing.sm,
-  },
-  cardTitle: {
-    fontSize: tokens.fontSizes.xl,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-  },
-  metricItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: tokens.spacing.xs2,
-  },
-  metricLabel: {
-    fontSize: tokens.fontSizes.xs,
-    textTransform: 'uppercase',
-    letterSpacing: tokens.typography.letterSpacingWide,
-    color: tokens.colors.textMuted,
-  },
-  metricValue: {
-    fontSize: tokens.fontSizes.xxl,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-});
+const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
+  StyleSheet.create({
+    container: {
+      gap: tokens.spacing.xl,
+    },
+    card: {
+      borderRadius: tokens.radii.xl,
+      borderWidth: 1,
+      borderColor: tokens.colors.borderLight,
+      backgroundColor: tokens.colors.surface,
+      padding: tokens.spacing.xxl,
+      gap: tokens.spacing.xl,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: tokens.spacing.sm,
+    },
+    cardTitle: {
+      fontSize: tokens.fontSizes.xl,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+    },
+    metricItem: {
+      flex: 1,
+      alignItems: 'center',
+      gap: tokens.spacing.sm,
+    },
+    metricLabel: {
+      fontSize: tokens.fontSizes.sm,
+      textTransform: 'uppercase',
+      letterSpacing: tokens.typography.letterSpacingWide,
+      color: tokens.colors.textMuted,
+    },
+    metricValue: {
+      fontSize: tokens.fontSizes.xxxl,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+  });

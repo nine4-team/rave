@@ -8,7 +8,7 @@ import { SettingsPanel } from './src/components/SettingsPanel';
 import { RequestListScreen } from './src/screens/RequestListScreen';
 import { RequestDetailScreen } from './src/screens/RequestDetailScreen';
 import type { Request } from '../../packages/shared/src/types';
-import { tokens } from './src/theme/tokens';
+import { ThemeProvider, useTheme } from './src/theme/theme';
 
 type Tab = 'scorecard' | 'reviews' | 'referrals' | 'settings';
 
@@ -49,11 +49,15 @@ const formatStageLabel = (stage: string) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
-export default function App() {
+const AppContent = () => {
+  const { tokens, resolvedTheme } = useTheme();
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('scorecard');
   const [activeReviewStage, setActiveReviewStage] = useState<ReviewStage>('new');
   const [activeReferralStage, setActiveReferralStage] = useState<ReferralStage>('new');
+  const statusBarStyle = resolvedTheme === 'dark' ? 'light-content' : 'dark-content';
+
+  const styles = createStyles(tokens);
 
   const currentStage = activeTab === 'reviews' ? activeReviewStage : activeReferralStage;
   const stageDescription =
@@ -85,23 +89,20 @@ export default function App() {
 
   if (selectedRequest) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
-        <View style={styles.detailHeader}>
-          <Pressable style={styles.backButton} onPress={() => setSelectedRequest(null)}>
-            <Text style={styles.backText}>Back</Text>
-          </Pressable>
-          <Text style={styles.detailTitle}>Request</Text>
-          <View style={styles.backSpacer} />
-        </View>
-        <RequestDetailScreen request={selectedRequest} />
+      <SafeAreaView style={styles.detailContainer}>
+        <StatusBar barStyle={statusBarStyle} backgroundColor={tokens.colors.surface} />
+        <RequestDetailScreen
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          onArchive={() => {}}
+        />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={statusBarStyle} backgroundColor={tokens.colors.surface} />
 
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
@@ -186,9 +187,9 @@ export default function App() {
           <Pressable style={styles.newRequestButton}>
             <View style={styles.newRequestContent}>
               {activeTab === 'reviews' ? (
-                <Star size={tokens.iconSizes.md} color={tokens.colors.surface} />
+                <Star size={tokens.iconSizes.md} color={tokens.colors.onBrand} />
               ) : (
-                <Handshake size={tokens.iconSizes.md} color={tokens.colors.surface} />
+                <Handshake size={tokens.iconSizes.md} color={tokens.colors.onBrand} />
               )}
               <Text style={styles.newRequestText}>
                 {activeTab === 'reviews' ? 'New Review Request' : 'New Referral Request'}
@@ -209,10 +210,10 @@ export default function App() {
               onPress={() => setActiveTab(tab)}
               style={styles.bottomNavItem}
             >
-              {tab === 'scorecard' && <TrendingUp size={tokens.iconSizes.md} color={iconColor} />}
-              {tab === 'reviews' && <Star size={tokens.iconSizes.md} color={iconColor} />}
-              {tab === 'referrals' && <Handshake size={tokens.iconSizes.md} color={iconColor} />}
-              {tab === 'settings' && <Settings size={tokens.iconSizes.md} color={iconColor} />}
+              {tab === 'scorecard' && <TrendingUp size={tokens.iconSizes.lg} color={iconColor} />}
+              {tab === 'reviews' && <Star size={tokens.iconSizes.lg} color={iconColor} />}
+              {tab === 'referrals' && <Handshake size={tokens.iconSizes.lg} color={iconColor} />}
+              {tab === 'settings' && <Settings size={tokens.iconSizes.lg} color={iconColor} />}
               <Text style={[styles.bottomNavLabel, isActive && styles.bottomNavLabelActive]}>
                 {tab}
               </Text>
@@ -222,139 +223,129 @@ export default function App() {
       </View>
     </SafeAreaView>
   );
+};
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: tokens.colors.actionBackgroundSubtle,
-  },
-  detailHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: tokens.spacing.xl,
-    paddingVertical: tokens.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: tokens.colors.borderLight,
-    backgroundColor: tokens.colors.surface,
-  },
-  backButton: {
-    paddingVertical: tokens.spacing.xs2,
-    paddingHorizontal: tokens.spacing.sm,
-  },
-  backText: {
-    fontSize: tokens.fontSizes.base,
-    fontWeight: '600',
-    color: tokens.colors.brand,
-  },
-  detailTitle: {
-    fontSize: tokens.fontSizes.xl,
-    fontWeight: '700',
-    color: tokens.colors.textPrimary,
-  },
-  backSpacer: {
-    width: 48,
-  },
-  header: {
-    backgroundColor: tokens.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: tokens.colors.borderLight,
-  },
-  headerTitleRow: {
-    paddingVertical: tokens.spacing.lg,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: tokens.fontSizes.xl,
-    fontWeight: '700',
-    color: tokens.colors.textPrimary,
-  },
-  stageTabs: {
-    paddingHorizontal: tokens.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: tokens.colors.borderLight,
-  },
-  stageTab: {
-    paddingHorizontal: tokens.spacing.lg,
-    paddingVertical: tokens.spacing.md,
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
-  },
-  stageTabActive: {
-    borderBottomColor: tokens.colors.brand,
-  },
-  stageTabText: {
-    fontSize: tokens.fontSizes.sm,
-    fontWeight: '600',
-    color: tokens.colors.textSecondary,
-  },
-  stageTabTextActive: {
-    color: tokens.colors.brand,
-  },
-  stageDefinition: {
-    paddingHorizontal: tokens.spacing.xl,
-    paddingVertical: tokens.spacing.md,
-    backgroundColor: tokens.colors.surface,
-  },
-  stageDefinitionText: {
-    fontSize: tokens.fontSizes.sm,
-    color: tokens.colors.textMuted,
-    textAlign: 'center',
-  },
-  body: {
-    flex: 1,
-  },
-  scorecardContainer: {
-    padding: tokens.spacing.xxl,
-    paddingBottom: tokens.spacing.huge,
-  },
-  settingsContainer: {
-    padding: tokens.spacing.xxl,
-    paddingBottom: tokens.spacing.huge,
-  },
-  newRequestBar: {
-    paddingHorizontal: tokens.spacing.xl,
-    paddingVertical: tokens.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: tokens.colors.borderLight,
-    backgroundColor: tokens.colors.surface,
-  },
-  newRequestButton: {
-    paddingVertical: tokens.spacing.lg,
-    borderRadius: tokens.radii.md,
-    backgroundColor: tokens.colors.brand,
-    alignItems: 'center',
-  },
-  newRequestContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: tokens.spacing.sm,
-  },
-  newRequestText: {
-    color: tokens.colors.surface,
-    fontWeight: '600',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    borderTopColor: tokens.colors.borderLight,
-    backgroundColor: tokens.colors.surface,
-    paddingVertical: tokens.spacing.md,
-  },
-  bottomNavItem: {
-    alignItems: 'center',
-    paddingHorizontal: tokens.spacing.sm,
-    gap: tokens.spacing.xs,
-  },
-  bottomNavLabel: {
-    fontSize: tokens.fontSizes.sm,
-    textTransform: 'capitalize',
-    color: tokens.colors.textSubtle,
-  },
-  bottomNavLabelActive: {
-    color: tokens.colors.brand,
-    fontWeight: '600',
-  },
-});
+const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: tokens.colors.actionBackgroundSubtle,
+    },
+    detailContainer: {
+      flex: 1,
+      backgroundColor: tokens.colors.surface,
+    },
+    header: {
+      backgroundColor: tokens.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: tokens.colors.borderLight,
+    },
+    headerTitleRow: {
+      paddingVertical: tokens.spacing.xl,
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: tokens.fontSizes.lg,
+      fontWeight: '700',
+      color: tokens.colors.textPrimary,
+    },
+    stageTabs: {
+      paddingHorizontal: tokens.spacing.xl,
+    },
+    stageTab: {
+      paddingHorizontal: tokens.spacing.xl,
+      paddingVertical: tokens.spacing.lg,
+      borderBottomWidth: 3,
+      borderBottomColor: 'transparent',
+    },
+    stageTabActive: {
+      borderBottomColor: tokens.colors.brand,
+    },
+    stageTabText: {
+      fontSize: tokens.fontSizes.base,
+      fontWeight: '500',
+      color: tokens.colors.textSecondary,
+    },
+    stageTabTextActive: {
+      color: tokens.colors.brand,
+      fontWeight: '700',
+    },
+    stageDefinition: {
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingVertical: tokens.spacing.lg,
+      backgroundColor: tokens.colors.surface,
+    },
+    stageDefinitionText: {
+      fontSize: tokens.fontSizes.sm,
+      color: tokens.colors.textMuted,
+      textAlign: 'center',
+    },
+    body: {
+      flex: 1,
+    },
+    scorecardContainer: {
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingTop: tokens.spacing.huge,
+      paddingBottom: tokens.spacing.huge,
+    },
+    settingsContainer: {
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingTop: tokens.spacing.huge,
+      paddingBottom: tokens.spacing.huge,
+    },
+    newRequestBar: {
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingVertical: tokens.spacing.lg,
+      borderTopWidth: 1,
+      borderTopColor: tokens.colors.borderLight,
+      backgroundColor: tokens.colors.surface,
+    },
+    newRequestButton: {
+      paddingVertical: tokens.spacing.lg,
+      borderRadius: tokens.radii.md,
+      backgroundColor: tokens.colors.brand,
+      alignItems: 'center',
+    },
+    newRequestContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: tokens.spacing.sm,
+    },
+    newRequestText: {
+      color: tokens.colors.onBrand,
+      fontWeight: '600',
+    },
+    bottomNav: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      borderTopWidth: 1,
+      borderTopColor: tokens.colors.borderLight,
+      backgroundColor: tokens.colors.surface,
+      paddingVertical: tokens.spacing.xl,
+      paddingHorizontal: tokens.spacing.xxxl,
+    },
+    bottomNavItem: {
+      alignItems: 'center',
+      paddingHorizontal: tokens.spacing.xl,
+      paddingVertical: tokens.spacing.sm,
+      gap: tokens.spacing.xs,
+    },
+    bottomNavLabel: {
+      fontSize: tokens.fontSizes.xs,
+      textTransform: 'capitalize',
+      color: tokens.colors.textSubtle,
+      fontWeight: '500',
+    },
+    bottomNavLabelActive: {
+      color: tokens.colors.brand,
+      fontWeight: '600',
+    },
+  });

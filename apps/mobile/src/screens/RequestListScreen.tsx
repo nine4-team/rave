@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Request } from '../../../../packages/shared/src/types';
 import { RequestCard } from '../components/RequestCard';
-import { tokens } from '../theme/tokens';
+import { useTheme } from '../theme/theme';
 
 type RequestListScreenProps = {
   requests: Request[];
@@ -17,6 +17,8 @@ export const RequestListScreen: React.FC<RequestListScreenProps> = ({
   emptyTitle,
   emptyDescription,
 }) => {
+  const { tokens } = useTheme();
+  const styles = createStyles(tokens);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {requests.length === 0 ? (
@@ -35,32 +37,34 @@ export const RequestListScreen: React.FC<RequestListScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    padding: tokens.spacing.xxl,
-  },
-  list: {
-    gap: tokens.spacing.xl,
-  },
-  emptyState: {
-    paddingVertical: tokens.spacing.huge,
-    paddingHorizontal: tokens.spacing.xl,
-    borderRadius: tokens.radii.lg,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: tokens.colors.borderMedium,
-    backgroundColor: tokens.colors.surface,
-    alignItems: 'center',
-    gap: tokens.spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: tokens.fontSizes.xl,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-  },
-  emptyDescription: {
-    fontSize: tokens.fontSizes.md,
-    color: tokens.colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
+  StyleSheet.create({
+    container: {
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingVertical: tokens.spacing.huge,
+    },
+    list: {
+      gap: tokens.spacing.xl,
+    },
+    emptyState: {
+      paddingVertical: 48,
+      paddingHorizontal: tokens.spacing.xxxl,
+      borderRadius: tokens.radii.xl,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: tokens.colors.borderMedium,
+      backgroundColor: tokens.colors.surface,
+      alignItems: 'center',
+      gap: tokens.spacing.sm,
+    },
+    emptyTitle: {
+      fontSize: tokens.fontSizes.lg,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+    emptyDescription: {
+      fontSize: tokens.fontSizes.xl,
+      color: tokens.colors.textSecondary,
+      textAlign: 'center',
+    },
+  });
