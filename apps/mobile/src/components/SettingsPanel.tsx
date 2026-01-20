@@ -14,7 +14,7 @@ export const SettingsPanel: React.FC = () => {
   const [businessDescription, setBusinessDescription] = useState('');
   const [toneExamples, setToneExamples] = useState('');
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState('');
-  const [emojiThreshold, setEmojiThreshold] = useState(4);
+  const [npsThreshold, setNpsThreshold] = useState(9);
   const [cadenceIntervalDays, setCadenceIntervalDays] = useState('3');
   const [cadenceMaxAttempts, setCadenceMaxAttempts] = useState('3');
 
@@ -129,32 +129,62 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Emoji Threshold</Text>
-          <Text style={styles.sectionDescription}>
-            Which rating counts as positive (default 4/5).
-          </Text>
+          <Text style={styles.sectionTitle}>NPS Review Threshold</Text>
+          <View style={styles.sectionDescriptionContainer}>
+            <Text style={styles.sectionDescription}>
+              Controls who we ask to leave a review on Google, based on their NPS score.
+            </Text>
+            <Text style={styles.sectionDescription}>
+              The question asked is:{' '}
+              <Text style={styles.sectionDescriptionBold}>
+                "How likely are you to refer my business to a friend or family member?"
+              </Text>
+              .
+            </Text>
+            <Text style={styles.sectionDescription}>
+              Scores at or above your threshold will be asked for a Google review.
+            </Text>
+          </View>
         </View>
         <View style={styles.inputCard}>
-          <View style={styles.emojiRow}>
-            {[1, 2, 3, 4, 5].map((value) => {
-              const isActive = emojiThreshold === value;
-              return (
-                <Pressable
-                  key={value}
-                  onPress={() => setEmojiThreshold(value)}
-                  style={[styles.emojiButton, isActive && styles.emojiButtonActive]}
-                >
-                  <Text style={[styles.emojiLabel, isActive && styles.emojiLabelActive]}>
-                    {value}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <View style={styles.actionRow}>
-            <Pressable style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Save</Text>
-            </Pressable>
+          <View style={styles.thresholdRow}>
+            <View style={styles.npsRow}>
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => {
+                const isAtOrAboveThreshold = value >= npsThreshold;
+                return (
+                  <Pressable
+                    key={value}
+                    onPress={() => setNpsThreshold(value)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set NPS threshold to ${value}`}
+                    hitSlop={8}
+                    style={[
+                      styles.npsButton,
+                      isAtOrAboveThreshold && styles.npsButtonActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.npsButtonText,
+                        isAtOrAboveThreshold && styles.npsButtonTextActive,
+                      ]}
+                    >
+                      {value}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={styles.thresholdActionRow}>
+              <View style={styles.thresholdInfo}>
+                <Text style={styles.thresholdInfoText}>
+                  Threshold: {npsThreshold}+
+                </Text>
+              </View>
+              <Pressable style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Save</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -216,9 +246,15 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     appearanceTitle: {
       fontSize: tokens.fontSizes.lg,
     },
+    sectionDescriptionContainer: {
+      gap: tokens.spacing.md,
+    },
     sectionDescription: {
       fontSize: tokens.fontSizes.sm,
       color: tokens.colors.textSecondary,
+    },
+    sectionDescriptionBold: {
+      fontWeight: '600',
     },
     optionList: {
       borderRadius: tokens.radii.md,
@@ -283,32 +319,50 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       fontWeight: '600',
       color: tokens.colors.textSecondary,
     },
-    emojiRow: {
+    thresholdRow: {
+      gap: tokens.spacing.lg,
+    },
+    npsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: tokens.spacing.sm,
+      gap: tokens.spacing.xs,
+      justifyContent: 'center',
     },
-    emojiButton: {
-      width: tokens.sizes.emoji,
-      height: tokens.sizes.emoji,
+    npsButton: {
+      width: 38,
+      height: 38,
       borderRadius: tokens.radii.md,
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: tokens.colors.borderMedium,
+      backgroundColor: tokens.colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: tokens.colors.surface,
     },
-    emojiButtonActive: {
-      borderColor: tokens.colors.brand,
+    npsButtonActive: {
       backgroundColor: tokens.colors.brand,
+      borderColor: tokens.colors.brand,
     },
-    emojiLabel: {
+    npsButtonText: {
       fontSize: tokens.fontSizes.base,
       fontWeight: '600',
       color: tokens.colors.textPrimary,
     },
-    emojiLabelActive: {
+    npsButtonTextActive: {
       color: tokens.colors.onBrand,
+    },
+    thresholdActionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: tokens.spacing.md,
+    },
+    thresholdInfo: {
+      alignItems: 'flex-start',
+    },
+    thresholdInfoText: {
+      fontSize: tokens.fontSizes.sm,
+      color: tokens.colors.textSecondary,
+      fontWeight: '500',
     },
     cadenceRow: {
       gap: tokens.spacing.lg,

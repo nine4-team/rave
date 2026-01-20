@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './firebase'
 import './index.css'
 import App from './App.tsx'
+import { applyThemeTokens, getPreferredTheme } from './theme/tokens'
+
+applyThemeTokens(getPreferredTheme())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

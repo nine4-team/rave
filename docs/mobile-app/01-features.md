@@ -2,7 +2,7 @@
 
 ## Product Summary
 - Mobile-first convenience app for small business owners to generate Google reviews and referrals.
-- Core flow: sync contacts → select contact → tap Review or Referral → generate a personalized draft message → user sends from native SMS/email app (not sent inside Rave).
+- Core flow: sync contacts → select contact → tap Review or Referral → generate the next message → user sends from native SMS/email app (not sent inside Rave).
 - **Hybrid architecture**: React-Native owner app + lightweight public web surface for **referrers** (no install, no account, single-use links).
 - **Firebase backend**: Auth + Firestore + Cloud Functions for AI and link workflows.
 
@@ -15,11 +15,21 @@
 
 ## Scorecard Dashboard (Owner App)
 - **Top-level tab** on the main nav, separate from Reviews/Referrals lists.
-- Shows two KPI cards: **Reviews** and **Referrals**.
-- Each card includes:
+- Shows three KPI cards: **Reviews**, **Referrals**, and **NPS**.
+- Scorecard is **summary-only**; request-level actions and drafts live in the request detail view.
+- **Reviews card** includes:
   - **Requests** (sent requests only; excludes status = "new")
-  - **Reviews** (reviewed + replied) or **Intros** (introduced + thanked)
+  - **Reviews** (reviewed + replied)
   - **Conversion** (completed / requests)
+- **Referrals card** includes:
+  - **Requests** (sent requests only; excludes status = "new")
+  - **Intros** (introduced + thanked)
+  - **Conversion** (completed / requests)
+- **NPS card** includes:
+  - **Total Responses** (count of NPS scores submitted)
+  - **NPS Score** (% Promoters - % Detractors, range -100 to +100)
+  - **Average Score** (mean of all NPS scores, 0–10)
+  - Breakdown: **Promoters** (9–10), **Passives** (7–8), **Detractors** (0–6)
 - **Time filter** controls the time window for all scorecard metrics:
   - Default: **Last 30 days**
   - Presets: **Last 7 / 30 / 90 days**, plus **All time**
@@ -32,6 +42,8 @@
   - **Send message** (initial request or follow-up)
   - **Reply on Google** (after positive feedback)
   - **Create referral request** (final review stage after reply)
+- Request detail shows a **Next** card with the next draft message and actions:
+  - **Send**, **Revise**, **Delete** (message-only actions)
 - Requests with action required bubble to the top and show an **Action Needed** badge.
 - Users can **dismiss/delete** a next action; this clears the badge.
 
@@ -46,23 +58,26 @@
 - **Referrer web flow**: generate tone variants + one-sentence surgical revision.
 - **Google review replies**: owner-facing reply suggestions to published reviews.
 
-## Drafts and Persistence
-- Messages are generated as **TextDraft objects** stored persistently in-app.
-- Each TextDraft is **tappable**; tapping expands to show the full text plus two actions:
-  - **Send** – opens the native SMS/email composer with the contact pre-filled and the message pre-populated in the text field (no in-app sending).
-  - **Revise** – opens an inline expando or modal containing a text entry box (type or dictate via the Swift widget). A lightweight spinner indicates AI revision in progress; revised text replaces the draft inline. User can iterate or hit Send when satisfied.
-- Dedicated section listing all TextDrafts with **three tabs**:
-  - **Unsent** – drafts ready to send or revise.
-  - **Sent** – history of dispatched messages (read-only unless copy/resend needed).
-  - **Archived** – messages the user has archived (hidden from Unsent/Sent but retrievable).
-- Swipe or long-press actions on cards: **Delete** (permanent) or **Archive** (moves to Archived tab).
-- Consider drafts as a **sequence/cadence** rather than a single text (for follow-ups).
+## History
+- History shows **sent messages** with timestamps and message body.
+-probably messages should have at least 'draft' and 'sent' statuses.
+- Review requests include feedback history:
+  - **NPS score** (0–10) and optional feedback text.
+  - **Google review posted** event when confirmed.
+- Referral requests include referral history:
+  - **Referrer input** (raw text).
+  - **Intro sent** (final message).
+  - **Intro marked successful** (optional user note).
 
 ## Cadences and Follow-Ups
-- Built-in follow-up sequences.
-- **Stage 1 goal**: drive contact to complete the emoji feedback form.
-- **Stage 2 goal**: if feedback ≥ threshold and no review detected, nudge to paste their own (already-copied) text into Google.
-- User-controllable cadence settings (intervals between follow-ups).
+- Built-in follow-up sequences stored in Settings.
+- **Sequences are templates**, composed of draft templates for each step in the pipeline.
+- A **draft** is an **unsent message** created from a draft template and attached to a request.
+- **Revise** updates only the request’s draft (templates are unchanged).
+- When sent, a draft becomes a **sent message** and appears in **History**.
+- **Stage 1 goal**: drive contact to complete the NPS feedback form.
+- **Stage 2 goal**: if NPS score ≥ threshold and no review detected, nudge to paste their own (already-copied) text into Google.
+- User-controllable cadence settings **per message** (intervals between steps; not one global interval).
 - Drafts can be scheduled or queued for follow-up reminders.
 - **Smart reuse**: once feedback is captured, later messages auto-insert the user's own positive text + Google link to reduce friction.
 
@@ -77,13 +92,13 @@
 - Potential heuristic: infer reviewer identity by matching review timestamps to sent requests.
 
 ## Gating Mechanism for Reviews
-- Instead of sending the Google review URL directly, send a link to an in-app or hosted **feedback form**.
+- Instead of sending the Google review URL directly, send a link to an in-app or hosted **NPS feedback form**.
 - **Two-screen feedback flow**:
-  1. **Emoji rating screen**: 5-point smiley scale (very frowny → very smiley). Default threshold = 4th emoji (smiley but less smiley). User can change threshold in settings.
+  1. **NPS score screen**: 0–10 scale asking "How likely are you to recommend [business] to a friend or colleague?" Default threshold = 9 (Promoters: 9–10). User can change threshold in settings.
   2. **Positive outcome screen** (≥ threshold): prominent **Copy** button that copies the user's own feedback text to clipboard plus short instructions: "Paste this into Google and tap the link below to leave your review."
   3. **Negative outcome screen** (< threshold): private feedback capture only; no Google redirect.
 - **Copy-then-navigate UX**: we can auto-copy the text and immediately open the Google review URL in the browser, but we still show explicit instructions so users understand they must paste. (Safest: copy + instructions + link; optional auto-open.)
-- **Cadence integration**: the first follow-up sequence's only goal is to get the contact to complete the emoji screen. Once that screen is submitted, the sequence advances. If the outcome was positive and no Google review has been detected, subsequent messages include the user's own feedback text (retrieved from the submitted form) plus the Google review link, making copy-paste effortless.
+- **Cadence integration**: the first follow-up sequence's only goal is to get the contact to complete the NPS form. Once that screen is submitted, the sequence advances. If the outcome was positive and no Google review has been detected, subsequent messages include the user's own feedback text (retrieved from the submitted form) plus the Google review link, making copy-paste effortless.
 
 ## Referral Flow (Web Surface for Referrers)
 - Owner taps "Request Intro" in RN app → system creates secure, single-use referral link (expires in 7 days) and sends it to referrer via SMS/email.
@@ -101,8 +116,8 @@
 - **Business Description** – free-text field (1–2 sentences, plain language). Used in every LLM prompt so generated messages always explain what the business does without extra typing. Example: "I run a mobile dog-grooming service in North Austin."
 - **Tone Examples** – optional sample sentences the owner might actually say; injected into prompts to keep generated messages aligned with their voice.
 - **Google My Business URL** – stored for automatic inclusion in review requests.
-- **Emoji threshold** – which smiley (1–5) counts as "positive"; default = 4.
-- **Cadence controls** – interval days between follow-ups, max attempts, etc.
+- **NPS threshold** – which NPS score (0–10) counts as "positive"; default = 9 (Promoters: 9–10).
+- **Cadence controls** – per-message intervals between follow-ups, max attempts, etc.
 
 ## Can We Auto-Fill Google Review Text?
 - Likely **not possible** to automatically drop text into Google's review text input due to:
@@ -121,7 +136,7 @@
 - How to model outcomes and attribution for reviews/referrals.
 - UX for marking referral success.
 - Whether gating form lives inside app or as a simple hosted web page.
-- **Emoji threshold default**: 4/5 smiley—keep or allow user to set lower?
+- **NPS threshold default**: 9 (Promoters)—keep or allow user to set lower?
 - **Auto-open browser after copy**: yes/no toggle in settings?
 - **Copy instructions**: short inline text vs richer graphic card?
 - **Revise container**: inline expando vs modal vs new screen?

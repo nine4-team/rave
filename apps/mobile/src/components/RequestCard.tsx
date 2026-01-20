@@ -96,14 +96,14 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       width: tokens.sizes.avatar,
       height: tokens.sizes.avatar,
       borderRadius: tokens.sizes.avatar / 2,
-      backgroundColor: tokens.colors.avatarBackground,
+      backgroundColor: tokens.colors.brand,
       alignItems: 'center',
       justifyContent: 'center',
     },
     avatarText: {
       fontSize: tokens.fontSizes.base,
       fontWeight: '600',
-      color: tokens.colors.avatarText,
+      color: tokens.colors.surfaceAlt,
     },
     headerInfo: {
       flex: 1,

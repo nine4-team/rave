@@ -21,7 +21,7 @@ graph TD
     F --> H["Revisions<br/>(optional user edits)"]
     G --> H
     
-    C --> I["Emoji Rating<br/>(Stage 1)"]
+    C --> I["NPS Score<br/>(Stage 1)"]
     C --> J["Feedback Text<br/>(Stage 2)"]
     C --> K["Google Review Link<br/>(future tracking)"]
     
@@ -90,7 +90,7 @@ interface Request {
 ```typescript
 interface MessageSequence {
   id: string;
-  stage: 1 | 2;                      // Stage 1 = emoji feedback, Stage 2 = nudge to Google/finalize
+  stage: 1 | 2;                      // Stage 1 = NPS feedback, Stage 2 = nudge to Google/finalize
   messages: TextDraft[];             // Chronological array
   cadenceSettings: {
     intervalDays: number;            // Days between follow-ups
@@ -143,14 +143,15 @@ interface ReviewFeedback {
   id: string;
   requestId: string;
   
-  // Stage 1: Emoji Rating (emoji feedback form)
-  emojiRating?: {
-    value: 1 | 2 | 3 | 4 | 5;
+  // Stage 1: NPS Score (NPS feedback form)
+  npsScore?: {
+    value: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     submittedAt: Date;
     meetsThreshold: boolean;        // Compared against owner's threshold setting
+    category: "promoter" | "passive" | "detractor";  // 9-10: promoter, 7-8: passive, 0-6: detractor
   };
   
-  // Stage 2: Feedback Text (only if emoji ≥ threshold)
+  // Stage 2: Feedback Text (only if NPS ≥ threshold)
   feedbackText?: {
     text: string;                    // User's own feedback text
     submittedAt: Date;
@@ -167,7 +168,7 @@ interface ReviewFeedback {
 ```
 
 **Purpose**: Captures the two-stage feedback flow:
-- Stage 1 gathers emoji rating (very frowny → very smiley)
+- Stage 1 gathers NPS score (0–10 scale: "How likely are you to recommend [business] to a friend or colleague?")
 - Stage 2 (if threshold met) captures user's feedback text for copying to Google
 - Tracks Google review completion when available
 
@@ -258,6 +259,12 @@ The scorecard is computed from existing Request data. It is **read-only**, time-
 - **Referral Requests** = count of referral Requests with `status !== "new"`.
 - **Intros** = count of referral Requests with `status ∈ {"introduced","thanked"}`.
 - **Conversion** = completed / requests (rounded to whole percent).
+- **NPS Score** = calculated from ReviewFeedback.npsScore values:
+  - **Promoters** (9–10): count of NPS scores ≥ 9
+  - **Passives** (7–8): count of NPS scores 7–8
+  - **Detractors** (0–6): count of NPS scores ≤ 6
+  - **NPS** = % Promoters - % Detractors (standard NPS calculation)
+  - **Average NPS** = mean of all NPS scores (0–10)
 
 ### Time Filtering
 - The time window applies to the **request sent date** (not draft creation).
@@ -287,6 +294,14 @@ interface ScorecardMetrics {
     requests: number;
     completed: number;
     conversionPercent: number;
+  };
+  nps: {
+    totalResponses: number;
+    promoters: number;        // Scores 9–10
+    passives: number;         // Scores 7–8
+    detractors: number;       // Scores 0–6
+    npsScore: number;        // % Promoters - % Detractors (-100 to +100)
+    averageScore: number;    // Mean of all NPS scores (0–10)
   };
 }
 ```
@@ -514,10 +529,10 @@ Request List
    TextDraft 1.sentAt = now
    Request.status = "requested"
    
-3. Contact opens emoji link → submits 4/5 rating
-   ReviewFeedback.emojiRating = { value: 4, meetsThreshold: true }
+3. Contact opens NPS link → submits NPS score of 9
+   ReviewFeedback.npsScore = { value: 9, meetsThreshold: true, category: "promoter" }
    MessageSequence.stage progression check:
-     → Rating meets threshold, advance to Stage 2
+     → NPS score meets threshold, advance to Stage 2
    TextDraft 2 (Stage 2 follow-up) is generated with Google link
    
 4. Contact continues to feedback text screen
