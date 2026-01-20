@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Check, Monitor, Moon, Sun } from 'lucide-react-native';
+import { Check, ChevronDown, ChevronUp, Info, Monitor, Moon, Sun } from 'lucide-react-native';
 import { type ThemePreference, useTheme } from '../theme/theme';
 
 type ThemeOption = {
@@ -15,8 +15,13 @@ export const SettingsPanel: React.FC = () => {
   const [toneExamples, setToneExamples] = useState('');
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState('');
   const [npsThreshold, setNpsThreshold] = useState(9);
+  const [npsExplanationExpanded, setNpsExplanationExpanded] = useState(false);
+  const [businessDescriptionExpanded, setBusinessDescriptionExpanded] = useState(false);
+  const [toneExamplesExpanded, setToneExamplesExpanded] = useState(false);
+  const [googleBusinessUrlExpanded, setGoogleBusinessUrlExpanded] = useState(false);
   const [cadenceIntervalDays, setCadenceIntervalDays] = useState('3');
   const [cadenceMaxAttempts, setCadenceMaxAttempts] = useState('3');
+  const [cadenceExplanationExpanded, setCadenceExplanationExpanded] = useState(false);
 
   const themeOptions: ThemeOption[] = [
     { label: 'Light', value: 'light', Icon: Sun },
@@ -25,6 +30,7 @@ export const SettingsPanel: React.FC = () => {
   ];
 
   const styles = createStyles(tokens);
+  const npsScale = Array.from({ length: 11 }, (_, value) => value);
 
   return (
     <View style={styles.container}>
@@ -60,10 +66,32 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Business Description</Text>
-          <Text style={styles.sectionDescription}>
-            1–2 sentence summary of what you do and who you serve.
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.sectionTitle}>Business Description</Text>
+            <Pressable
+              onPress={() => setBusinessDescriptionExpanded(!businessDescriptionExpanded)}
+              hitSlop={8}
+            >
+              {businessDescriptionExpanded ? (
+                <ChevronUp
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              ) : (
+                <Info
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              )}
+            </Pressable>
+          </View>
+          {businessDescriptionExpanded && (
+            <View style={styles.sectionDescriptionContainer}>
+              <Text style={styles.sectionDescription}>
+                1–2 sentence summary of what you do and who you serve.
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputCard}>
           <TextInput
@@ -84,8 +112,30 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Tone Examples</Text>
-          <Text style={styles.sectionDescription}>Optional sample sentences to match your voice.</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.sectionTitle}>Tone Examples</Text>
+            <Pressable
+              onPress={() => setToneExamplesExpanded(!toneExamplesExpanded)}
+              hitSlop={8}
+            >
+              {toneExamplesExpanded ? (
+                <ChevronUp
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              ) : (
+                <Info
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              )}
+            </Pressable>
+          </View>
+          {toneExamplesExpanded && (
+            <View style={styles.sectionDescriptionContainer}>
+              <Text style={styles.sectionDescription}>Optional sample sentences to match your voice.</Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputCard}>
           <TextInput
@@ -106,8 +156,30 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Google My Business URL</Text>
-          <Text style={styles.sectionDescription}>Included automatically in review requests.</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.sectionTitle}>Google Business Profile URL</Text>
+            <Pressable
+              onPress={() => setGoogleBusinessUrlExpanded(!googleBusinessUrlExpanded)}
+              hitSlop={8}
+            >
+              {googleBusinessUrlExpanded ? (
+                <ChevronUp
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              ) : (
+                <Info
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              )}
+            </Pressable>
+          </View>
+          {googleBusinessUrlExpanded && (
+            <View style={styles.sectionDescriptionContainer}>
+              <Text style={styles.sectionDescription}>Included automatically in review requests.</Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputCard}>
           <TextInput
@@ -129,56 +201,74 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>NPS Review Threshold</Text>
-          <View style={styles.sectionDescriptionContainer}>
-            <Text style={styles.sectionDescription}>
-              Controls who we ask to leave a review on Google, based on their NPS score.
-            </Text>
-            <Text style={styles.sectionDescription}>
-              The question asked is:{' '}
-              <Text style={styles.sectionDescriptionBold}>
-                "How likely are you to refer my business to a friend or family member?"
-              </Text>
-              .
-            </Text>
-            <Text style={styles.sectionDescription}>
-              Scores at or above your threshold will be asked for a Google review.
-            </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.sectionTitle}>NPS Review Threshold</Text>
+            <Pressable
+              onPress={() => setNpsExplanationExpanded(!npsExplanationExpanded)}
+              hitSlop={8}
+            >
+              {npsExplanationExpanded ? (
+                <ChevronUp
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              ) : (
+                <Info
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              )}
+            </Pressable>
           </View>
+          {npsExplanationExpanded && (
+            <View style={styles.sectionDescriptionContainer}>
+              <Text style={styles.sectionDescription}>
+                Controls who we ask to leave a review on Google, based on their NPS score.
+              </Text>
+              <Text style={styles.sectionDescription}>
+                The question asked is:{' '}
+                <Text style={styles.sectionDescriptionBold}>
+                  "How likely are you to refer my business to a friend or family member?"
+                </Text>
+                .
+              </Text>
+              <Text style={styles.sectionDescription}>
+                Scores at or above your threshold will be asked for a Google review. Everyone else will be asked to leave you feedback directly.
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputCard}>
           <View style={styles.thresholdRow}>
-            <View style={styles.npsRow}>
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => {
-                const isAtOrAboveThreshold = value >= npsThreshold;
-                return (
+            <View style={styles.sliderContainer}>
+              <View style={styles.sliderLabels}>
+                {npsScale.map((value) => (
                   <Pressable
                     key={value}
                     onPress={() => setNpsThreshold(value)}
+                    style={styles.sliderLabelItem}
                     accessibilityRole="button"
                     accessibilityLabel={`Set NPS threshold to ${value}`}
-                    hitSlop={8}
-                    style={[
-                      styles.npsButton,
-                      isAtOrAboveThreshold && styles.npsButtonActive,
-                    ]}
                   >
                     <Text
                       style={[
-                        styles.npsButtonText,
-                        isAtOrAboveThreshold && styles.npsButtonTextActive,
+                        styles.sliderLabel,
+                        value >= npsThreshold
+                          ? styles.sliderLabelActive
+                          : styles.sliderLabelInactive,
                       ]}
                     >
                       {value}
                     </Text>
                   </Pressable>
-                );
-              })}
+                ))}
+              </View>
             </View>
             <View style={styles.thresholdActionRow}>
               <View style={styles.thresholdInfo}>
                 <Text style={styles.thresholdInfoText}>
-                  Threshold: {npsThreshold}+
+                  Threshold:{' '}
+                  <Text style={styles.thresholdInfoValue}>{npsThreshold}+</Text>
                 </Text>
               </View>
               <Pressable style={styles.secondaryButton}>
@@ -191,8 +281,30 @@ export const SettingsPanel: React.FC = () => {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Cadence Controls</Text>
-          <Text style={styles.sectionDescription}>Set follow-up intervals and max attempts.</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.sectionTitle}>Cadence Controls</Text>
+            <Pressable
+              onPress={() => setCadenceExplanationExpanded(!cadenceExplanationExpanded)}
+              hitSlop={8}
+            >
+              {cadenceExplanationExpanded ? (
+                <ChevronUp
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              ) : (
+                <Info
+                  size={tokens.iconSizes.md}
+                  color={tokens.colors.textSecondary}
+                />
+              )}
+            </Pressable>
+          </View>
+          {cadenceExplanationExpanded && (
+            <View style={styles.sectionDescriptionContainer}>
+              <Text style={styles.sectionDescription}>Set follow-up intervals and max attempts.</Text>
+            </View>
+          )}
         </View>
         <View style={styles.inputCard}>
           <View style={styles.cadenceRow}>
@@ -238,6 +350,11 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       gap: tokens.spacing.xs,
       paddingHorizontal: tokens.spacing.xs,
     },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: tokens.spacing.xs,
+    },
     sectionTitle: {
       fontSize: tokens.fontSizes.xl,
       fontWeight: '600',
@@ -248,6 +365,8 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     },
     sectionDescriptionContainer: {
       gap: tokens.spacing.md,
+      paddingTop: tokens.spacing.sm,
+      paddingBottom: tokens.spacing.sm,
     },
     sectionDescription: {
       fontSize: tokens.fontSizes.sm,
@@ -322,32 +441,27 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     thresholdRow: {
       gap: tokens.spacing.lg,
     },
-    npsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+    sliderContainer: {
       gap: tokens.spacing.xs,
-      justifyContent: 'center',
     },
-    npsButton: {
-      width: 38,
-      height: 38,
-      borderRadius: tokens.radii.md,
-      borderWidth: 1.5,
-      borderColor: tokens.colors.borderMedium,
-      backgroundColor: tokens.colors.surface,
+    sliderLabels: {
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      position: 'relative',
+      height: 20,
     },
-    npsButtonActive: {
-      backgroundColor: tokens.colors.brand,
-      borderColor: tokens.colors.brand,
+    sliderLabelItem: {
+      flex: 1,
+      alignItems: 'center',
     },
-    npsButtonText: {
-      fontSize: tokens.fontSizes.base,
+    sliderLabel: {
+      fontSize: tokens.fontSizes.xs,
+    },
+    sliderLabelActive: {
+      color: tokens.colors.brand,
       fontWeight: '600',
-      color: tokens.colors.textPrimary,
     },
-    npsButtonTextActive: {
+    sliderLabelInactive: {
       color: tokens.colors.onBrand,
     },
     thresholdActionRow: {
@@ -363,6 +477,10 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       fontSize: tokens.fontSizes.sm,
       color: tokens.colors.textSecondary,
       fontWeight: '500',
+    },
+    thresholdInfoValue: {
+      color: tokens.colors.brand,
+      fontWeight: '600',
     },
     cadenceRow: {
       gap: tokens.spacing.lg,

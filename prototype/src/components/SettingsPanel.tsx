@@ -97,7 +97,7 @@ export const SettingsPanel: React.FC = () => {
 
         <div className="space-y-3">
           <div className="px-1">
-            <h4 className="text-base font-semibold text-primary">Google My Business URL</h4>
+            <h4 className="text-base font-semibold text-primary">Google Business Profile URL</h4>
             <p className="text-sm text-secondary">Included automatically in review requests.</p>
           </div>
           <div className="border border-[#eeeeee] dark:border-[#38383A] rounded-lg bg-white dark:bg-[#2E2E2E] p-4 space-y-3">

@@ -115,7 +115,7 @@
 ## Owner Settings (Review & Referral Context)
 - **Business Description** – free-text field (1–2 sentences, plain language). Used in every LLM prompt so generated messages always explain what the business does without extra typing. Example: "I run a mobile dog-grooming service in North Austin."
 - **Tone Examples** – optional sample sentences the owner might actually say; injected into prompts to keep generated messages aligned with their voice.
-- **Google My Business URL** – stored for automatic inclusion in review requests.
+- **Google Business Profile URL** – stored for automatic inclusion in review requests.
 - **NPS threshold** – which NPS score (0–10) counts as "positive"; default = 9 (Promoters: 9–10).
 - **Cadence controls** – per-message intervals between follow-ups, max attempts, etc.
 
