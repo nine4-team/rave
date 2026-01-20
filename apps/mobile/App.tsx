@@ -85,6 +85,8 @@ const AppContent = () => {
       : activeTab === 'referrals'
         ? REFERRAL_STAGE_DEFINITIONS[activeReferralStage]
         : '';
+  const shouldShowEmptyCta =
+    (activeTab === 'reviews' || activeTab === 'referrals') && currentStage === 'new';
 
   const filteredRequests = useMemo(() => {
     if (activeTab === 'reviews') {
@@ -263,8 +265,7 @@ const AppContent = () => {
           <RequestListScreen
             requests={filteredRequests}
             onSelect={setSelectedRequest}
-            emptyTitle={`No ${formatStageLabel(currentStage)} requests`}
-            emptyDescription="Requests in this stage will appear here."
+            emptyTitle="No Requests"
           />
         )}
       </View>
@@ -364,7 +365,7 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: tokens.colors.actionBackgroundSubtle,
+      backgroundColor: tokens.colors.surface,
     },
     detailContainer: {
       flex: 1,
@@ -427,6 +428,7 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     },
     body: {
       flex: 1,
+      backgroundColor: tokens.colors.actionBackgroundSubtle,
     },
     scorecardContainer: {
       paddingHorizontal: tokens.spacing.xxxl,

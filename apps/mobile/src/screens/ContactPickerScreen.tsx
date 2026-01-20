@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -48,7 +48,7 @@ export const ContactPickerScreen: React.FC<ContactPickerScreenProps> = ({
   requests,
   onClose,
   onContinue,
-  title = 'Select Contacts',
+  title,
 }) => {
   const { tokens, resolvedTheme } = useTheme();
   const styles = createStyles(tokens);
@@ -140,9 +140,10 @@ export const ContactPickerScreen: React.FC<ContactPickerScreenProps> = ({
     [contacts, requests, requestType],
   );
 
-  const filteredContacts = useMemo(() => {
-    const searchValue = searchQuery.trim().toLowerCase();
-    const matchesSearch = (contact: PickerContact) => {
+  const searchValue = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
+
+  const matchesSearch = useCallback(
+    (contact: PickerContact) => {
       if (!searchValue) {
         return true;
       }
@@ -154,39 +155,86 @@ export const ContactPickerScreen: React.FC<ContactPickerScreenProps> = ({
         .filter(Boolean)
         .join(' ');
       return searchHaystack.includes(searchValue) || contact.normalizedName.includes(searchValue);
-    };
+    },
+    [searchValue],
+  );
 
-    return contacts
-      .filter(matchesSearch)
-      .filter((contact) => {
-        const meta = requestMetaLookup[contact.id];
-        const hasExisting = Boolean(meta);
-        const isRequested = hasExisting || requestedIds.has(contact.id);
-        const isSetAside = setAsideIds.has(contact.id);
-        const isHidden = hiddenIds.has(contact.id);
+  const getContactTab = useCallback(
+    (contact: PickerContact): ContactPickerTab => {
+      const meta = requestMetaLookup[contact.id];
+      const hasExisting = Boolean(meta);
+      const isRequested = hasExisting || requestedIds.has(contact.id);
+      const isSetAside = setAsideIds.has(contact.id);
 
-        if (activeTab === 'requested') {
-          return isRequested;
-        }
-        if (activeTab === 'set-aside') {
-          if (!isSetAside) {
-            return false;
-          }
-          return showHidden || !isHidden;
-        }
-        return !isRequested && !isSetAside && !isHidden;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
+      if (isSetAside) {
+        return 'set-aside';
+      }
+      if (isRequested) {
+        return 'requested';
+      }
+      return 'not-requested';
+    },
+    [requestMetaLookup, requestedIds, setAsideIds],
+  );
+
+  const isContactVisibleInTab = useCallback(
+    (contact: PickerContact, tab: ContactPickerTab, allowHidden: boolean) => {
+      const meta = requestMetaLookup[contact.id];
+      const hasExisting = Boolean(meta);
+      const isRequested = hasExisting || requestedIds.has(contact.id);
+      const isSetAside = setAsideIds.has(contact.id);
+      const isHidden = hiddenIds.has(contact.id);
+
+      if (tab === 'requested') {
+        return isRequested;
+      }
+      if (tab === 'set-aside') {
+        return isSetAside && (allowHidden || !isHidden);
+      }
+      return !isRequested && !isSetAside && !isHidden;
+    },
+    [hiddenIds, requestMetaLookup, requestedIds, setAsideIds],
+  );
+
+  useEffect(() => {
+    if (!searchValue) {
+      return;
+    }
+
+    const hasMatchInActiveTab = contacts.some(
+      (contact) => matchesSearch(contact) && isContactVisibleInTab(contact, activeTab, true),
+    );
+
+    if (hasMatchInActiveTab) {
+      return;
+    }
+
+    const firstMatch = contacts.find((contact) => matchesSearch(contact));
+    if (!firstMatch) {
+      return;
+    }
+
+    const targetTab = getContactTab(firstMatch);
+    if (targetTab !== activeTab) {
+      setActiveTab(targetTab);
+    }
   }, [
     activeTab,
     contacts,
-    hiddenIds,
-    requestMetaLookup,
-    requestedIds,
-    searchQuery,
-    setAsideIds,
-    showHidden,
+    getContactTab,
+    isContactVisibleInTab,
+    matchesSearch,
+    searchValue,
   ]);
+
+  const filteredContacts = useMemo(() => {
+    const allowHidden = showHidden || Boolean(searchValue);
+
+    return contacts
+      .filter(matchesSearch)
+      .filter((contact) => isContactVisibleInTab(contact, activeTab, allowHidden))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [activeTab, contacts, isContactVisibleInTab, matchesSearch, searchValue, showHidden]);
 
   const toggleSelected = (contactId: string) => {
     setSelectedIds((prev) => {
@@ -374,6 +422,7 @@ export const ContactPickerScreen: React.FC<ContactPickerScreenProps> = ({
   const permissionStatus = permission?.status ?? 'undetermined';
   const canAskAgain = permission?.canAskAgain ?? true;
   const isReviewRequest = requestType === 'review';
+  const headerTitle = `Create ${isReviewRequest ? 'Review' : 'Referral'} Requests`;
 
   const renderPermissionState = () => (
     <View style={styles.emptyState}>
@@ -397,11 +446,15 @@ export const ContactPickerScreen: React.FC<ContactPickerScreenProps> = ({
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <View style={styles.headerSpacer} />
-          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerTitle}>{headerTitle}</Text>
           <Pressable style={styles.headerIconButton} onPress={onClose} accessibilityLabel="Close">
             <X size={tokens.iconSizes.lg} color={tokens.colors.textSecondary} />
           </Pressable>
         </View>
+        <Text style={styles.headerHelper}>
+          Request drafts will be created in{' '}
+          <Text style={styles.headerHelperEmphasis}>{isReviewRequest ? 'Reviews' : 'Referrals'}</Text>.
+        </Text>
         <View style={styles.searchContainer}>
           <View style={styles.searchRow}>
             <TextInput
@@ -605,7 +658,7 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: tokens.colors.actionBackgroundSubtle,
+      backgroundColor: tokens.colors.surface,
       position: 'relative',
     },
     header: {
@@ -618,6 +671,7 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     content: {
       flex: 1,
       position: 'relative',
+      backgroundColor: tokens.colors.actionBackgroundSubtle,
     },
     headerRow: {
       flexDirection: 'row',
@@ -631,6 +685,18 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       fontWeight: '700',
       color: tokens.colors.textPrimary,
     },
+    headerHelper: {
+      fontSize: tokens.fontSizes.sm,
+      color: tokens.colors.textSecondary,
+      textAlign: 'center',
+      paddingHorizontal: tokens.spacing.xxxl,
+      marginTop: -tokens.spacing.sm,
+      marginBottom: tokens.spacing.lg,
+    },
+    headerHelperEmphasis: {
+      color: tokens.colors.brand,
+      fontWeight: '700',
+    },
     headerSpacer: {
       width: tokens.iconSizes.lg,
     },
@@ -641,6 +707,7 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     searchContainer: {
       paddingHorizontal: tokens.spacing.xxxl,
       paddingBottom: tokens.spacing.lg,
+      marginTop: tokens.spacing.sm,
     },
     searchRow: {
       flexDirection: 'row',
