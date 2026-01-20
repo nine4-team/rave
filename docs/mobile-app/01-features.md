@@ -42,6 +42,7 @@
   - **Send message** (initial request or follow-up)
   - **Reply on Google** (after positive feedback)
   - **Create referral request** (final review stage after reply)
+- When a request is created, the default next action is the **initial “Send message” draft** and it remains the next action until the owner **sends** it or **dismisses/deletes** it.
 - Request detail shows a **Next** card with the next draft message and actions:
   - **Send**, **Revise**, **Delete** (message-only actions)
 - Requests with action required bubble to the top and show an **Action Needed** badge.
@@ -75,6 +76,11 @@
 - A **draft** is an **unsent message** created from a draft template and attached to a request.
 - **Revise** updates only the request’s draft (templates are unchanged).
 - When sent, a draft becomes a **sent message** and appears in **History**.
+- **Cadence start + advancement rules**
+  - When a new request is created, the contact sits on the **current next action**, which is the **initial request message** (the first “Send message” draft). The request stays on that next action until the owner takes it (sends or deletes/dismisses it).
+  - The cadence “clock” **does not start** just because a request exists. Cadence is only relevant when **follow-up is required**.
+  - If the owner **has not sent** the current next-action draft, the system should **not auto-advance** or replace it with the next message when the cadence interval elapses. The next action remains the same draft until acted on.
+  - Once the owner **sends** the current message, the cadence interval begins (e.g., set/compute `lastMessageSentAt` → `nextScheduledAt`). When the interval elapses, the **next follow-up draft** may be generated/queued as the next action.
 - **Stage 1 goal**: drive contact to complete the NPS feedback form.
 - **Stage 2 goal**: if NPS score ≥ threshold and no review detected, nudge to paste their own (already-copied) text into Google.
 - User-controllable cadence settings **per message** (intervals between steps; not one global interval).

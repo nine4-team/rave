@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import type { MessageSequence } from '../types';
 import { Edit2, Trash2, Send, ChevronDown, ChevronUp } from 'lucide-react';
 
-interface MessageSequenceSectionProps {
+interface MessagesSectionProps {
   sequence: MessageSequence;
 }
 
-export const MessageSequenceSection: React.FC<MessageSequenceSectionProps> = ({ sequence }) => {
+export const MessagesSection: React.FC<MessagesSectionProps> = ({ sequence }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const upcomingMessages = sequence.messages
     .filter((msg) => msg.status === 'unsent' && !msg.sentAt)

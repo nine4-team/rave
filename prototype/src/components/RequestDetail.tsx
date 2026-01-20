@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Request } from '../types';
 import { X, Archive } from 'lucide-react';
-import { MessageSequenceSection } from './MessageSequenceSection';
+import { MessagesSection } from './MessagesSection';
 import { ReviewActivityTimeline } from './ReviewActivityTimeline';
 import { ReferralDataSection } from './ReferralDataSection';
 
@@ -91,7 +91,7 @@ export const RequestDetail: React.FC<RequestDetailProps> = ({ request, onClose }
               status={request.status}
             />
           ) : (
-            <MessageSequenceSection sequence={request.messageSequence} />
+            <MessagesSection sequence={request.messageSequence} />
           )}
 
           {/* Referral Data (if referral request) */}

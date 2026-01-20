@@ -1,16 +1,20 @@
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { Archive, X } from 'lucide-react-native';
 import type { Request } from '../../../../packages/shared/src/types';
-import { MessageSequenceSection } from '../components/MessageSequenceSection';
-import { ReferralDataSection } from '../components/ReferralDataSection';
-import { ReviewActivityTimeline } from '../components/ReviewActivityTimeline';
+import { HistorySection } from '../components/HistorySection';
+import { NextStepSection } from '../components/NextStepSection';
+import { ReviseModal } from '../components/ReviseModal';
 import { useTheme } from '../theme/theme';
+import { buildHistoryItems, getNextStep } from '../utils/requestDetail';
+import { sendMessage } from '../utils/messaging';
+import { updateDraftWithRevision } from '../utils/revise';
 
 type RequestDetailScreenProps = {
   request: Request;
   onClose: () => void;
   onArchive: () => void;
+  onRequestUpdate?: (updatedRequest: Request) => void;
 };
 
 const getStatusLabel = (status: Request['status']) => {
@@ -43,18 +47,121 @@ export const RequestDetailScreen: React.FC<RequestDetailScreenProps> = ({
   request,
   onClose,
   onArchive,
+  onRequestUpdate,
 }) => {
   const { tokens } = useTheme();
   const styles = createStyles(tokens);
   const contactName = request.contactSnapshot?.displayName ?? request.contactId;
+  const [localRequest, setLocalRequest] = useState(request);
+  const [reviseModalVisible, setReviseModalVisible] = useState(false);
+  const [revisingMessageId, setRevisingMessageId] = useState<string | null>(null);
+  const [revisingOriginalMessage, setRevisingOriginalMessage] = useState('');
+
+  // Use local request state if available, otherwise fall back to prop
+  const currentRequest = localRequest || request;
+  const nextStep = getNextStep(currentRequest);
+  const historyItems = buildHistoryItems(currentRequest);
+
+  const handleSend = async () => {
+    const draft = nextStep?.messageDraft;
+    const nextStepKind = nextStep?.kind ?? null;
+
+    if (!draft) {
+      return;
+    }
+
+    if (nextStepKind === 'reply-google') {
+      Alert.alert(
+        'Reply on Google',
+        'Google Business Profile replies will be supported once the account is connected.',
+      );
+      return;
+    }
+
+    try {
+      await sendMessage(draft, currentRequest.contactSnapshot);
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Failed to open message composer',
+      );
+    }
+  };
+
+  const handleRevise = () => {
+    const draft = nextStep?.messageDraft;
+    const targetMessageId = draft?.id || '';
+
+    if (!draft) {
+      Alert.alert('Error', 'No message found to revise');
+      return;
+    }
+
+    setRevisingMessageId(targetMessageId);
+    setRevisingOriginalMessage(draft.content);
+    setReviseModalVisible(true);
+  };
+
+  const handleReviseComplete = (revisedContent: string, revisionInstructions: string) => {
+    if (!revisingMessageId) {
+      return;
+    }
+
+    const draft = currentRequest.messageSequence.messages.find(
+      m => m.id === revisingMessageId,
+    );
+
+    if (!draft) {
+      Alert.alert('Error', 'Message not found');
+      return;
+    }
+
+    // Update the draft with revised content
+    const updatedDraft = updateDraftWithRevision(
+      draft,
+      revisedContent,
+      revisionInstructions,
+    );
+
+    // Update the message sequence
+    const updatedMessages = currentRequest.messageSequence.messages.map((m) =>
+      m.id === revisingMessageId ? updatedDraft : m,
+    );
+
+    const updatedRequest: Request = {
+      ...currentRequest,
+      messageSequence: {
+        ...currentRequest.messageSequence,
+        messages: updatedMessages,
+      },
+    };
+
+    setLocalRequest(updatedRequest);
+    onRequestUpdate?.(updatedRequest);
+
+    setReviseModalVisible(false);
+    setRevisingMessageId(null);
+    setRevisingOriginalMessage('');
+  };
+
+  const handleDelete = () => {
+    // TODO: Implement delete functionality
+    Alert.alert('Delete', 'Delete functionality coming soon');
+  };
+
+  const handleRequestReferral = () => {
+    // TODO: Implement referral request generation
+    Alert.alert('Request a Referral', 'Referral request generation coming soon');
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} stickyHeaderIndices={[0]}>
-      <View style={styles.stickyHeader}>
-        <View style={styles.headerText}>
-          <Text style={styles.contactName}>{contactName}</Text>
-          <Text style={styles.subtext}>Created {formatDate(request.createdAt)}</Text>
-        </View>
+    <>
+      <ScrollView contentContainerStyle={styles.container} stickyHeaderIndices={[0]}>
+        <View style={styles.stickyHeader}>
+          <View style={styles.headerText}>
+            <Text style={styles.contactName}>{contactName}</Text>
+            <Text style={styles.subtext}>Created {formatDate(currentRequest.createdAt)}</Text>
+          </View>
         <View style={styles.headerActions}>
           <Pressable
             style={styles.headerIconButton}
@@ -77,28 +184,39 @@ export const RequestDetailScreen: React.FC<RequestDetailScreenProps> = ({
         <View style={styles.statusBar}>
           <View style={styles.statusItem}>
             <Text style={styles.statusLabel}>Status:</Text>
-            <Text style={styles.statusValue}>{getStatusLabel(request.status)}</Text>
+            <Text style={styles.statusValue}>{getStatusLabel(currentRequest.status)}</Text>
           </View>
           <View style={styles.statusItem}>
             <Text style={styles.statusLabel}>Type:</Text>
-            <Text style={styles.statusValue}>{request.type}</Text>
+            <Text style={styles.statusValue}>{currentRequest.type}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          {request.type === 'review' ? (
-            <ReviewActivityTimeline request={request} />
-          ) : (
-            <>
-              <MessageSequenceSection sequence={request.messageSequence} />
-              {request.referralData ? (
-                <ReferralDataSection referralData={request.referralData} />
-              ) : null}
-            </>
-          )}
+          <NextStepSection
+            step={nextStep}
+            onSend={handleSend}
+            onRevise={handleRevise}
+            onDelete={handleDelete}
+            onRequestReferral={handleRequestReferral}
+          />
+          <HistorySection items={historyItems} />
         </View>
       </View>
     </ScrollView>
+
+    <ReviseModal
+      visible={reviseModalVisible}
+      originalMessage={revisingOriginalMessage}
+      messageId={revisingMessageId || ''}
+      onClose={() => {
+        setReviseModalVisible(false);
+        setRevisingMessageId(null);
+        setRevisingOriginalMessage('');
+      }}
+      onReviseComplete={handleReviseComplete}
+    />
+    </>
   );
 };
 

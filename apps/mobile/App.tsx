@@ -1,6 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
-import { Handshake, Settings, Star, TrendingUp } from 'lucide-react-native';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Handshake, Plus, Settings, Star, TrendingUp } from 'lucide-react-native';
 import './src/firebase';
 import { mockRequests } from './src/mockData';
 import { ScorecardOverview } from './src/components/ScorecardOverview';
@@ -55,6 +65,7 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState<Tab>('scorecard');
   const [activeReviewStage, setActiveReviewStage] = useState<ReviewStage>('new');
   const [activeReferralStage, setActiveReferralStage] = useState<ReferralStage>('new');
+  const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
   const statusBarStyle = resolvedTheme === 'dark' ? 'light-content' : 'dark-content';
 
   const styles = createStyles(tokens);
@@ -87,6 +98,26 @@ const AppContent = () => {
     return [];
   }, [activeReferralStage, activeReviewStage, activeTab]);
 
+  const reviewCtaLabel = 'New Review Request';
+  const referralCtaLabel = 'New Referral Request';
+
+  const handleNewReviewRequest = () => {
+    Alert.alert('New Review Request', 'Review request creation coming soon.');
+  };
+
+  const handleNewReferralRequest = () => {
+    Alert.alert('New Referral Request', 'Referral request creation coming soon.');
+  };
+
+  const handleActionSheetSelect = (type: 'review' | 'referral') => {
+    setIsActionSheetVisible(false);
+    if (type === 'review') {
+      handleNewReviewRequest();
+    } else {
+      handleNewReferralRequest();
+    }
+  };
+
   if (selectedRequest) {
     return (
       <SafeAreaView style={styles.detailContainer}>
@@ -106,12 +137,20 @@ const AppContent = () => {
 
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
+          <View style={styles.headerActionSpacer} />
           <Text style={styles.headerTitle}>
             {activeTab === 'scorecard' && 'Scorecard'}
             {activeTab === 'reviews' && 'Reviews'}
             {activeTab === 'referrals' && 'Referrals'}
             {activeTab === 'settings' && 'Settings'}
           </Text>
+          <Pressable
+            style={styles.headerActionButton}
+            onPress={() => setIsActionSheetVisible(true)}
+            accessibilityLabel="Open new request menu"
+          >
+            <Plus size={tokens.iconSizes.lg} color={tokens.colors.brand} />
+          </Pressable>
         </View>
 
         {activeTab === 'reviews' && (
@@ -184,7 +223,10 @@ const AppContent = () => {
 
       {(activeTab === 'reviews' || activeTab === 'referrals') && (
         <View style={styles.newRequestBar}>
-          <Pressable style={styles.newRequestButton}>
+          <Pressable
+            style={styles.newRequestButton}
+            onPress={activeTab === 'reviews' ? handleNewReviewRequest : handleNewReferralRequest}
+          >
             <View style={styles.newRequestContent}>
               {activeTab === 'reviews' ? (
                 <Star size={tokens.iconSizes.md} color={tokens.colors.onBrand} />
@@ -192,7 +234,7 @@ const AppContent = () => {
                 <Handshake size={tokens.iconSizes.md} color={tokens.colors.onBrand} />
               )}
               <Text style={styles.newRequestText}>
-                {activeTab === 'reviews' ? 'New Review Request' : 'New Referral Request'}
+                {activeTab === 'reviews' ? reviewCtaLabel : referralCtaLabel}
               </Text>
             </View>
           </Pressable>
@@ -221,6 +263,41 @@ const AppContent = () => {
           );
         })}
       </View>
+
+      <Modal
+        transparent
+        visible={isActionSheetVisible}
+        animationType="fade"
+        onRequestClose={() => setIsActionSheetVisible(false)}
+      >
+        <Pressable
+          style={styles.actionSheetOverlay}
+          onPress={() => setIsActionSheetVisible(false)}
+        >
+          <Pressable style={styles.actionSheet} onPress={(event) => event.stopPropagation()}>
+            <Pressable
+              style={styles.actionSheetOption}
+              onPress={() => handleActionSheetSelect('review')}
+            >
+              <Star size={tokens.iconSizes.md} color={tokens.colors.brand} />
+              <Text style={styles.actionSheetText}>{reviewCtaLabel}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.actionSheetOption}
+              onPress={() => handleActionSheetSelect('referral')}
+            >
+              <Handshake size={tokens.iconSizes.md} color={tokens.colors.brand} />
+              <Text style={styles.actionSheetText}>{referralCtaLabel}</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.actionSheetOption, styles.actionSheetCancel]}
+              onPress={() => setIsActionSheetVisible(false)}
+            >
+              <Text style={styles.actionSheetCancelText}>Cancel</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -249,13 +326,23 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
       borderBottomColor: tokens.colors.borderLight,
     },
     headerTitleRow: {
-      paddingVertical: tokens.spacing.xl,
+      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: tokens.spacing.xxxl,
+      paddingVertical: tokens.spacing.xl,
     },
     headerTitle: {
       fontSize: tokens.fontSizes.lg,
       fontWeight: '700',
       color: tokens.colors.textPrimary,
+    },
+    headerActionSpacer: {
+      width: tokens.iconSizes.lg,
+    },
+    headerActionButton: {
+      padding: tokens.spacing.xs2,
+      borderRadius: tokens.radii.sm,
     },
     stageTabs: {
       paddingHorizontal: tokens.spacing.xl,
@@ -347,5 +434,49 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     bottomNavLabelActive: {
       color: tokens.colors.brand,
       fontWeight: '600',
+    },
+    actionSheetOverlay: {
+      flex: 1,
+      justifyContent: 'flex-start',
+      alignItems: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      paddingTop: tokens.spacing.xxxl,
+      paddingHorizontal: tokens.spacing.xxxl,
+    },
+    actionSheet: {
+      backgroundColor: tokens.colors.surface,
+      borderRadius: tokens.radii.lg,
+      padding: tokens.spacing.lg,
+      gap: tokens.spacing.sm,
+      minWidth: 240,
+      shadowColor: '#000',
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    actionSheetOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: tokens.spacing.sm,
+      paddingVertical: tokens.spacing.lg,
+      paddingHorizontal: tokens.spacing.lg,
+      borderRadius: tokens.radii.md,
+      backgroundColor: tokens.colors.surfaceAlt,
+    },
+    actionSheetText: {
+      fontSize: tokens.fontSizes.base,
+      fontWeight: '600',
+      color: tokens.colors.textPrimary,
+    },
+    actionSheetCancel: {
+      justifyContent: 'center',
+      backgroundColor: tokens.colors.actionBackground,
+    },
+    actionSheetCancelText: {
+      fontSize: tokens.fontSizes.base,
+      fontWeight: '600',
+      color: tokens.colors.textDark,
+      textAlign: 'center',
     },
   });

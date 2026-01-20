@@ -98,6 +98,7 @@ export const SettingsPanel: React.FC = () => {
             style={[styles.inputField, styles.multilineInput]}
             placeholder="e.g. I run a mobile dog-grooming service in North Austin."
             placeholderTextColor={tokens.colors.textSubtle}
+            selectionColor={tokens.colors.brand}
             multiline
             value={businessDescription}
             onChangeText={setBusinessDescription}
@@ -142,6 +143,7 @@ export const SettingsPanel: React.FC = () => {
             style={[styles.inputField, styles.multilineInput]}
             placeholder="Add a few sentences you might say to a customer."
             placeholderTextColor={tokens.colors.textSubtle}
+            selectionColor={tokens.colors.brand}
             multiline
             value={toneExamples}
             onChangeText={setToneExamples}
@@ -186,6 +188,7 @@ export const SettingsPanel: React.FC = () => {
             style={styles.inputField}
             placeholder="https://g.page/your-business/review"
             placeholderTextColor={tokens.colors.textSubtle}
+            selectionColor={tokens.colors.brand}
             value={googleBusinessUrl}
             onChangeText={setGoogleBusinessUrl}
             autoCapitalize="none"
@@ -313,6 +316,7 @@ export const SettingsPanel: React.FC = () => {
               <TextInput
                 style={styles.inputField}
                 keyboardType="number-pad"
+                selectionColor={tokens.colors.brand}
                 value={cadenceIntervalDays}
                 onChangeText={setCadenceIntervalDays}
               />
@@ -322,6 +326,7 @@ export const SettingsPanel: React.FC = () => {
               <TextInput
                 style={styles.inputField}
                 keyboardType="number-pad"
+                selectionColor={tokens.colors.brand}
                 value={cadenceMaxAttempts}
                 onChangeText={setCadenceMaxAttempts}
               />

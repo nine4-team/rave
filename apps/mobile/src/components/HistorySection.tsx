@@ -3,8 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CheckCircle, ChevronDown, ChevronUp, Frown, Meh, Send, Smile, Star, Type } from 'lucide-react-native';
 import type { HistoryItem } from '../utils/requestDetail';
 import { useTheme } from '../theme/theme';
+import { MessageCard } from './MessageCard';
 
-type HistoryTimelineProps = {
+type HistorySectionProps = {
   items: HistoryItem[];
 };
 
@@ -16,7 +17,7 @@ const formatTimestamp = (date: Date) =>
     minute: '2-digit',
   });
 
-export const HistoryTimeline: React.FC<HistoryTimelineProps> = ({ items }) => {
+export const HistorySection: React.FC<HistorySectionProps> = ({ items }) => {
   const { tokens } = useTheme();
   const styles = createStyles(tokens);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -104,6 +105,8 @@ export const HistoryTimeline: React.FC<HistoryTimelineProps> = ({ items }) => {
                       ) : null}
                     </View>
                   </View>
+                ) : item.icon === 'send' && item.body ? (
+                  <MessageCard text={item.body} />
                 ) : item.body ? (
                   <View style={styles.itemBody}>
                     <Text style={styles.itemBodyText}>{item.body}</Text>

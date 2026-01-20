@@ -44,16 +44,14 @@ These are feature-driven screens or flows described in `docs/01-features.md` tha
 - **Contact sync / import** screen and permissions flow.
 - **Contact selection** list and multi-select UI.
 - **Review/Referral request creation** flow (context entry, voice dictation, generate draft).
-- **Send** action wiring from the request detail (open native SMS/email composer).
-- **Revise** action wiring from the request detail (inline or modal revise box with AI spinner).
+- ✅ **Send** action wiring from the request detail (open native SMS/email composer). - **DONE**
+- ✅ **Revise** action wiring from the request detail (modal revise box with AI spinner). - **DONE**
 
 ### Feedback + outcome tracking
-- **Emoji feedback form** screens (rating + positive/negative outcome screens).
 - **Action-required** prioritization UI (badge + dismiss) if still desired.
 
-### Referrer experience (mobile entry points)
-- **Create referral link** flow and share UI from the owner app.
-- **Deep-link handoff** UX to the referrer web flow (UI confirmation/receipt).
+> Note: public-facing **review feedback/gating pages** and the **referrer referral web flow** have been moved out of this mobile-only audit.
+> See `docs/public-web-app/01-features.md` and `docs/public-web-app/implementation/ui-ux.md`.
 
 ### Settings persistence + system flows
 - **Save confirmation and persistence** indicators for settings fields.
@@ -63,8 +61,7 @@ These are feature-driven screens or flows described in `docs/01-features.md` tha
 Mobile navigation currently exposes **Scorecard**, **Reviews**, **Referrals**, and **Settings** only. There are no routes or entry points for:
 - Contact sync/selection
 - Request creation
-- Feedback form
-- Referral-link creation and handoff
+- Public web surfaces (feedback/gating pages, referrer referral flow) — tracked in `docs/public-web-app/`
 
 ## Data Model Notes (Non-UI)
 - Feedback capture for the Alex Rivera example appears in request detail mock data, but no persistent data structures exist yet. UI is in place; storage and schema work remain.

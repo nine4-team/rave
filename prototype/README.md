@@ -38,7 +38,7 @@ src/
 ├── components/
 │   ├── RequestCard.tsx                # Summary card for each request
 │   ├── RequestDetail.tsx              # Full detail modal
-│   ├── MessageSequenceSection.tsx     # Messages & cadence
+│   ├── MessagesSection.tsx           # Messages & cadence
 │   ├── ReviewFeedbackSection.tsx      # Emoji + feedback text
 │   ├── ReferralDataSection.tsx        # Referrer input & variants
 │   └── OutcomeSection.tsx             # Completion tracking

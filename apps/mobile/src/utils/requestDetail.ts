@@ -1,6 +1,6 @@
 import type { Request, TextDraft } from '../../../../packages/shared/src/types';
 
-export type NextActionKind = 'message' | 'reply-google' | 'request-referral';
+export type NextStepKind = 'message' | 'reply-google' | 'request-referral';
 
 export type ActionButton = {
   id: string;
@@ -9,13 +9,14 @@ export type ActionButton = {
   onPress?: () => void;
 };
 
-export type NextAction = {
+export type NextStep = {
   id: string;
-  kind: NextActionKind;
+  kind: NextStepKind;
   label: string;
-  message: string;
+  message?: string;
   subtext?: string;
   actions: ActionButton[];
+  messageDraft?: TextDraft; // Include the draft for sending
 };
 
 export type HistoryItem = {
@@ -42,7 +43,7 @@ const getFeedbackDetails = (request: Request) => {
   return { rating, feedbackText };
 };
 
-export const getNextAction = (request: Request): NextAction | null => {
+export const getNextStep = (request: Request): NextStep | null => {
   if (request.type === 'review' && request.status === 'replied') {
     return {
       id: `next-${request.id}`,
@@ -73,8 +74,9 @@ export const getNextAction = (request: Request): NextAction | null => {
   return {
     id: `next-${nextMessage.id}`,
     kind: shouldReplyOnGoogle ? 'reply-google' : 'message',
-    label: shouldReplyOnGoogle ? 'Reply on Google' : 'Text Message',
+    label: shouldReplyOnGoogle ? 'Reply on Google' : 'Send a text',
     message: nextMessage.content,
+    messageDraft: nextMessage, // Include the draft for sending
     actions: [
       {
         id: 'send',
