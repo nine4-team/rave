@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Check, ChevronDown, ChevronUp, Info, Monitor, Moon, Sun } from 'lucide-react-native';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Info,
+  Monitor,
+  Moon,
+  Sun,
+} from 'lucide-react-native';
 import { type ThemePreference, useTheme } from '../theme/theme';
 
 type ThemeOption = {
@@ -9,7 +18,11 @@ type ThemeOption = {
   Icon: typeof Sun;
 };
 
-export const SettingsPanel: React.FC = () => {
+type SettingsPanelProps = {
+  onManageContacts: () => void;
+};
+
+export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onManageContacts }) => {
   const { tokens, themePreference, setThemePreference } = useTheme();
   const [businessDescription, setBusinessDescription] = useState('');
   const [toneExamples, setToneExamples] = useState('');
@@ -62,6 +75,19 @@ export const SettingsPanel: React.FC = () => {
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Manage Contacts</Text>
+          <Text style={styles.sectionDescription}>
+            Organize your contacts and make requests.
+          </Text>
+        </View>
+        <Pressable style={styles.manageCard} onPress={onManageContacts}>
+          <Text style={styles.manageLabel}>Manage Contacts</Text>
+          <ChevronRight size={tokens.iconSizes.md} color={tokens.colors.textSecondary} />
+        </Pressable>
       </View>
 
       <View style={styles.section}>
@@ -405,6 +431,22 @@ const createStyles = (tokens: ReturnType<typeof useTheme>['tokens']) =>
     },
     optionLabel: {
       fontSize: tokens.fontSizes.base,
+      color: tokens.colors.textPrimary,
+    },
+    manageCard: {
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: tokens.colors.borderLight,
+      backgroundColor: tokens.colors.surface,
+      paddingVertical: tokens.spacing.lg,
+      paddingHorizontal: tokens.spacing.xl,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    manageLabel: {
+      fontSize: tokens.fontSizes.base,
+      fontWeight: '600',
       color: tokens.colors.textPrimary,
     },
     inputCard: {

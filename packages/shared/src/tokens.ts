@@ -56,7 +56,7 @@ const lightColors = {
   borderLight: '#EEEEEE',
   borderMedium: '#DDDDDD',
   actionBackground: '#F0F0F0',
-  actionBackgroundSubtle: '#F7F8FA',
+  actionBackgroundSubtle: '#ECECEC',
   success: '#4A7C59',
   warning: '#B06E00',
   warningPending: '#FFC107',

@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Handshake, Plus, Settings, Star, TrendingUp } from 'lucide-react-native';
 import './src/firebase';
 import { mockRequests } from './src/mockData';
@@ -17,10 +18,13 @@ import { ScorecardOverview } from './src/components/ScorecardOverview';
 import { SettingsPanel } from './src/components/SettingsPanel';
 import { RequestListScreen } from './src/screens/RequestListScreen';
 import { RequestDetailScreen } from './src/screens/RequestDetailScreen';
-import type { Request } from '../../packages/shared/src/types';
+import { ContactPickerScreen } from './src/screens/ContactPickerScreen';
+import type { Request, RequestType } from '../../packages/shared/src/types';
 import { ThemeProvider, useTheme } from './src/theme/theme';
+import type { PickerContact } from './src/utils/contactPicker';
 
 type Tab = 'scorecard' | 'reviews' | 'referrals' | 'settings';
+type ContactPickerMode = 'request' | 'manage';
 
 type ReviewStage = 'new' | 'requested' | 'feedback-received' | 'reviewed' | 'replied';
 type ReferralStage = 'new' | 'requested' | 'referral-drafted' | 'introduced' | 'thanked';
@@ -66,6 +70,10 @@ const AppContent = () => {
   const [activeReviewStage, setActiveReviewStage] = useState<ReviewStage>('new');
   const [activeReferralStage, setActiveReferralStage] = useState<ReferralStage>('new');
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
+  const [contactPickerContext, setContactPickerContext] = useState<{
+    mode: ContactPickerMode;
+    requestType: RequestType;
+  } | null>(null);
   const statusBarStyle = resolvedTheme === 'dark' ? 'light-content' : 'dark-content';
 
   const styles = createStyles(tokens);
@@ -102,11 +110,15 @@ const AppContent = () => {
   const referralCtaLabel = 'New Referral Request';
 
   const handleNewReviewRequest = () => {
-    Alert.alert('New Review Request', 'Review request creation coming soon.');
+    setContactPickerContext({ mode: 'request', requestType: 'review' });
   };
 
   const handleNewReferralRequest = () => {
-    Alert.alert('New Referral Request', 'Referral request creation coming soon.');
+    setContactPickerContext({ mode: 'request', requestType: 'referral' });
+  };
+
+  const handleManageContacts = () => {
+    setContactPickerContext({ mode: 'manage', requestType: 'review' });
   };
 
   const handleActionSheetSelect = (type: 'review' | 'referral') => {
@@ -117,6 +129,42 @@ const AppContent = () => {
       handleNewReferralRequest();
     }
   };
+
+  const handleContactPickerContinue = (
+    contacts: PickerContact[],
+    mode: ContactPickerMode,
+    type: RequestType,
+  ) => {
+    setContactPickerContext(null);
+    if (mode === 'manage') {
+      return;
+    }
+    Alert.alert(
+      'Contacts Selected',
+      `Selected ${contacts.length} contact${contacts.length === 1 ? '' : 's'} for a ${type} request.`,
+    );
+  };
+
+  if (contactPickerContext) {
+    return (
+      <SafeAreaView style={styles.detailContainer}>
+        <StatusBar barStyle={statusBarStyle} backgroundColor={tokens.colors.surface} />
+        <ContactPickerScreen
+          requestType={contactPickerContext.requestType}
+          requests={mockRequests}
+          title={contactPickerContext.mode === 'manage' ? 'Manage Contacts' : 'Select Contacts'}
+          onClose={() => setContactPickerContext(null)}
+          onContinue={(contacts) =>
+            handleContactPickerContinue(
+              contacts,
+              contactPickerContext.mode,
+              contactPickerContext.requestType,
+            )
+          }
+        />
+      </SafeAreaView>
+    );
+  }
 
   if (selectedRequest) {
     return (
@@ -205,7 +253,7 @@ const AppContent = () => {
       <View style={styles.body}>
         {activeTab === 'settings' ? (
           <ScrollView contentContainerStyle={styles.settingsContainer}>
-            <SettingsPanel />
+            <SettingsPanel onManageContacts={handleManageContacts} />
           </ScrollView>
         ) : activeTab === 'scorecard' ? (
           <ScrollView contentContainerStyle={styles.scorecardContainer}>
@@ -304,9 +352,11 @@ const AppContent = () => {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
